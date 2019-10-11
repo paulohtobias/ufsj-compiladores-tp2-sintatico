@@ -37,6 +37,8 @@ obj
 *.dSYM/
 
 #Project folders and files
-nbproject
-.vscode
-main
+nbproject/
+.vscode/
+testes/
+ideias/
+pcc

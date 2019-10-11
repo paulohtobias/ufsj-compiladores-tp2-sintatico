@@ -39,6 +39,7 @@ INCLUDE_PATHS := -I$(IDIR)
 # Libraries
 LIBS :=
 #CFLAGS += `pkg-config --cflags $(LIBS)`
+LOADLIBES = -lpcre2-8
 #LOADLIBES += `pkg-config --libs $(LIBS)`
 
 #Compilation line
@@ -46,7 +47,7 @@ COMPILE := $(CC) $(CFLAGS) $(INCLUDE_PATHS)
 
 #FILEs
 #---------------Source----------------#
-SRCS := $(wildcard $(SDIR)/*.c)
+SRCS := $(wildcard $(SDIR)/*.c) $(wildcard $(SDIR)/*/*.c) $(wildcard $(SDIR)/*/*/*.c)
 
 #---------------Object----------------#
 OBJS := $(SRCS:$(SDIR)/%.c=$(ODIR)/$(TARGET)/%.o)
