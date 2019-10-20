@@ -88,4 +88,9 @@ void pcc_gramatica_teste() {
 	i++;
 
 	pcc_ll1_calcular(&gramatica);
+
+	char vstr[][6] = {
+		"L", "L'", "S"
+	};
+	pcc_ll1_print(&gramatica, (char *) vstr, sizeof vstr[0]);
 }

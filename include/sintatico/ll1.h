@@ -85,4 +85,6 @@ void pcc_ll1_add_producao(pcc_ll1_t *gramatica, pcc_producao_t producao);
 
 void pcc_ll1_calcular(pcc_ll1_t *gramatica);
 
+void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_t variavel_str_tam);
+
 #endif // LL1_H
