@@ -12,6 +12,7 @@
 
 #include "lexico/token.h"
 
+
 int lexico_init();
 
 void lexico_finalizar();

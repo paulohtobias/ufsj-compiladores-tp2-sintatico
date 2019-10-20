@@ -9,8 +9,8 @@
 
 #include <string.h>
 #include "lexico/token.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
+#include "utils.h"
+#include "plist.h"
 
 /**
  * Controla se os comentários serão salvos na lista de tokens

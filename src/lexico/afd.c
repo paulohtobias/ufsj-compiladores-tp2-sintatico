@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "lexico/afd.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
+#include "utils.h"
+#include "plist.h"
 
 #define AFD_CODIGO(cod, msg) msg,
 const char __afd_msgs[][128] = {
@@ -72,7 +72,7 @@ afd_estado_t afd_criar_estado(afd_transicao_t *transicoes, size_t transicoes_qua
 			transicao.pattern.str = strdup(transicoes[i].pattern.str);
 			transicao.pattern.compiled = regex_compile(transicoes[i].pattern.str, PCRE2_ZERO_TERMINATED);
 
-			plist_insert(estado.transicoes, transicao, i);
+			plist_put(estado.transicoes, transicao, i);
 		}
 	}
 

@@ -9,8 +9,8 @@
 
 #include <string.h>
 #include "lexico/token/palavra-chave.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
+#include "utils.h"
+#include "plist.h"
 
 // X-Macro pra cada palavra chave.
 #define SUBTIPOS \

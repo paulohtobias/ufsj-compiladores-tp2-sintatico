@@ -9,8 +9,8 @@
 
 #include <string.h>
 #include "lexico/token.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
+#include "utils.h"
+#include "plist.h"
 
 /// Descrição dos códigos.
 #define TOKEN_CODIGO(cod, nome, descricao) descricao,

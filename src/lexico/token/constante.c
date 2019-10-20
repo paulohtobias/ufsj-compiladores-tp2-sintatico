@@ -13,27 +13,9 @@
 #include <float.h>
 #include <errno.h>
 #include "lexico/token.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
-
-// X-Macro pra cada tipo de constante.
-#define SUBTIPOS \
-	SUBTIPO(TK_CNST_STR, str, "string-literal") \
-	SUBTIPO(TK_CNST_CHAR, char, "char") \
-	SUBTIPO(TK_CNST_INT, int, "inteiro") \
-	SUBTIPO(TK_CNST_UINT, uint, "inteiro-unsigned") \
-	SUBTIPO(TK_CNST_LINT, lint, "inteiro-long") \
-	SUBTIPO(TK_CNST_ULINT, ulint, "inteiro-unsigned_long") \
-	SUBTIPO(TK_CNST_FLT, float, "float") \
-	SUBTIPO(TK_CNST_DBL, double, "double") \
-	SUBTIPO(TK_CNST_LDBL, ldouble, "double-long")
-
-/// Tipos de constante.
-#define SUBTIPO(cod, nome, str) cod,
-enum {
-	SUBTIPOS
-};
-#undef SUBTIPO
+#include "lexico/token/constante.h"
+#include "utils.h"
+#include "plist.h"
 
 /// Tipos de palavra-chave em string.
 #define SUBTIPO(cod, nome, str) str,
