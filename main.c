@@ -7,7 +7,7 @@
 
 int main(int argc, char const *argv[]) {
 
-	pcc_gramatica_init();
+	pcc_gramatica_teste();
 
 	char vstr[][6] = {
 		"L", "L'", "S"

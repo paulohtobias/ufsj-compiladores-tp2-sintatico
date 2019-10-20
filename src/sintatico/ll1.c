@@ -132,12 +132,58 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 }
 
 static void calcular_follow(pcc_ll1_t *gramatica) {
-	return;
-	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
-		const pcc_producao_t *producao = gramatica->producoes + i;
+	bool alteracao;
+	do {
+		alteracao = false;
 
-		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
-			const pcc_simbolo_t *simbolo = producao->simbolos + j;
+		for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
+			const pcc_producao_t *producao = gramatica->producoes + i;
+
+			for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
+				const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
+
+				if (simbolo_j->tipo == SIMBOLO_VARIAVEL) {
+					bool pode_ser_ultimo = true;
+					for (size_t k = j + 1; k < plist_len(producao->simbolos); k++) {
+						const pcc_simbolo_t *simbolo_k = producao->simbolos + k;
+
+						if (simbolo_k->tipo == SIMBOLO_TERMINAL) {
+							plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, simbolo_k->id.token);
+							alteracao = true;
+							pode_ser_ultimo = false;
+							break;
+						} else {
+							/*
+							 * Se for um não-terminal, então adicione FIRST
+							 * do símbolo à lista.
+							 */
+
+							for (int32_t l = 0; l < plist_len(gramatica->variaveis[simbolo_k->id.variavel].first); l++) {
+								if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[simbolo_k->id.variavel].first[l], NULL) == -1) {
+									plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, gramatica->variaveis[simbolo_k->id.variavel].first[l]);
+									alteracao = true;
+								}
+							}
+
+							// Se este símbolo não gerar vazio, então interrompemos.
+							if (!gramatica->variaveis[simbolo_k->id.variavel].gera_vazio) {
+								pode_ser_ultimo = false;
+								break;
+							}
+						}
+					}
+
+					if (pode_ser_ultimo) {
+						// Adiciona o FOLLOW de producao->origem em simbolo_j.
+						for (int32_t l = 0; l < plist_len(gramatica->variaveis[producao->origem].follow); l++) {
+							if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[producao->origem].follow[l], NULL) == -1) {
+								plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, gramatica->variaveis[producao->origem].follow[l]);
+								alteracao = true;
+							}
+						}
+					}
+				}
+			}
 		}
-	}
+	} while (alteracao);
 }
