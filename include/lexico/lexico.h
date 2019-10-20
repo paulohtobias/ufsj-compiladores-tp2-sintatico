@@ -17,6 +17,7 @@
 #include "lexico/token/extra.h"
 #include "lexico/token/preprocessador.h"
 
+
 int lexico_init();
 
 void lexico_finalizar();
