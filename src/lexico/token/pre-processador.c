@@ -10,16 +10,16 @@
 #include <ctype.h>
 #include <string.h>
 #include "lexico/token.h"
-#include "lexico/token/preprocessador.h"
+#include "lexico/token/pre-processador.h"
 #include "utils.h"
 #include "plist.h"
 
 /// Tipos de pre-processador em string.
-#define SUBTIPO(cod, nome) #nome,
+#define TK_PP_SUBTIPO(cod, nome) #nome,
 const char __preprocessadores[][32] = {
-	SUBTIPOS
+	TK_PP_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_PP_SUBTIPO
 size_t __preprocessadores_quantidade = ARR_TAMANHO(__preprocessadores);
 
 

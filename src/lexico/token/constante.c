@@ -18,17 +18,17 @@
 #include "plist.h"
 
 /// Tipos de palavra-chave em string.
-#define SUBTIPO(cod, nome, str) str,
+#define TK_CNST_SUBTIPO(cod, nome, str) str,
 const char __constantes[][32] = {
-	SUBTIPOS
+	TK_CNST_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_CNST_SUBTIPO
 size_t __constantes_quantidade = ARR_TAMANHO(__constantes);
 
 /// Funções init.
-#define SUBTIPO(cod, nome, str) static int nome ## _init(afd_t *afd);
-SUBTIPOS
-#undef SUBTIPO
+#define TK_CNST_SUBTIPO(cod, nome, str) static int nome ## _init(afd_t *afd);
+TK_CNST_SUBTIPOS
+#undef TK_CNST_SUBTIPO
 static int number_init(afd_t *afd);
 
 /// Funções adicionar.
@@ -57,13 +57,13 @@ static char *int_to_str(const void *dados, size_t comprimento);
 int token_constante_init(afd_t *afd) {
 	int res;
 
-	#define SUBTIPO(cod, nome, str) \
+	#define TK_CNST_SUBTIPO(cod, nome, str) \
 		if ((res = nome ## _init(afd)) != 0) { \
 			return 1; \
 		}
 
-	SUBTIPOS
-	#undef SUBTIPO
+	TK_CNST_SUBTIPOS
+	#undef TK_CNST_SUBTIPO
 
 	if ((res = number_init(afd)) != 0) {
 		return 1;

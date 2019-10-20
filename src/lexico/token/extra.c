@@ -14,19 +14,19 @@
 #include "plist.h"
 
 /// Tipos de extra em string.
-#define SUBTIPO(cod, lex, str) str,
+#define TK_EXT_SUBTIPO(cod, lex, str) str,
 const char __extras[][32] = {
-	SUBTIPOS
+	TK_EXT_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_EXT_SUBTIPO
 size_t __extras_quantidade = ARR_TAMANHO(__extras);
 
 /// Vetor com os lexemas de extra.
-#define SUBTIPO(cod, lex, str) lex,
+#define TK_EXT_SUBTIPO(cod, lex, str) lex,
 const char __extras_lexemas[][32] = {
-	SUBTIPOS
+	TK_EXT_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_EXT_SUBTIPO
 
 /// Função adicionar
 static void extra_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
@@ -41,11 +41,11 @@ int token_extra_init(afd_t *afd) {
 	afd_init(&afd_ext, 8);
 
 	// Estado 0.
-	#define SUBTIPO(cod, lex, str) {cod + 1, {"\\" lex, "\\" lex, NULL}},
+	#define TK_EXT_SUBTIPO(cod, lex, str) {cod + 1, {"\\" lex, "\\" lex, NULL}},
 	afd_transicao_t transicoes_0[] = {
-		SUBTIPOS
+		TK_EXT_SUBTIPOS
 	};
-	#undef SUBTIPO
+	#undef TK_EXT_SUBTIPO
 	afd_ext.estados[0] = afd_criar_estado(transicoes_0, ARR_TAMANHO(transicoes_0), false, NULL);
 
 	// Outros estados.

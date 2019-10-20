@@ -14,19 +14,19 @@
 #include "plist.h"
 
 /// Tipos de operador em string.
-#define SUBTIPO(cod, lex, str) str,
+#define TK_OP_SUBTIPO(cod, lex, str) str,
 const char __operadores[][32] = {
-	SUBTIPOS
+	TK_OP_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_OP_SUBTIPO
 size_t __operadores_quantidade = ARR_TAMANHO(__operadores);
 
 /// Vetor com os lexemas de operador.
-#define SUBTIPO(cod, lex, str) lex,
+#define TK_OP_SUBTIPO(cod, lex, str) lex,
 const char __operadores_lexemas[][32] = {
-	SUBTIPOS
+	TK_OP_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_OP_SUBTIPO
 
 /// Função adicionar
 static void operador_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);

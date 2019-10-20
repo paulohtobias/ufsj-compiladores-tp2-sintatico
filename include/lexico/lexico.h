@@ -15,7 +15,7 @@
 #include "lexico/token/constante.h"
 #include "lexico/token/operador.h"
 #include "lexico/token/extra.h"
-#include "lexico/token/preprocessador.h"
+#include "lexico/token/pre-processador.h"
 
 
 int lexico_init();
