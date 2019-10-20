@@ -12,9 +12,11 @@
 #include "plist.h"
 #include "sintatico/ll1.h"
 
+static int token_cmp(const void *tk1, const void *tk2);
 static void calcular_vazio(pcc_ll1_t *gramatica);
 static void calcular_first(pcc_ll1_t *gramatica);
 static void calcular_follow(pcc_ll1_t *gramatica);
+static void calcular_tabela_M(pcc_ll1_t *gramatica);
 
 void pcc_ll1_init(pcc_ll1_t *gramatica, uint16_t qtd_variaveis) {
 	plist_create(gramatica->variaveis, qtd_variaveis);
@@ -24,6 +26,7 @@ void pcc_ll1_init(pcc_ll1_t *gramatica, uint16_t qtd_variaveis) {
 		variavel.gera_vazio = false;
 		variavel.first = NULL;
 		variavel.follow = NULL;
+		variavel.M  = NULL;
 		plist_put(gramatica->variaveis, variavel, i);
 	}
 
@@ -45,6 +48,7 @@ void pcc_ll1_calcular(pcc_ll1_t *gramatica) {
 	calcular_vazio(gramatica);
 	calcular_first(gramatica);
 	calcular_follow(gramatica);
+	calcular_tabela_M(gramatica);
 }
 
 static void calcular_vazio(pcc_ll1_t *gramatica) {
@@ -105,7 +109,7 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 				 * passe para a próxima produção.
 				 */
 
-				if (_plist_find(gramatica->variaveis[producao->origem].first, &simbolo->id.token, NULL) == -1) {
+				if (_plist_find(gramatica->variaveis[producao->origem].first, &simbolo->id.token, token_cmp) == -1) {
 					plist_append(gramatica->variaveis[producao->origem].first, simbolo->id.token);
 				}
 
@@ -117,7 +121,7 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 				 */
 
 				for (int32_t k = 0; k < plist_len(gramatica->variaveis[simbolo->id.variavel].first); k++) {
-					if (_plist_find(gramatica->variaveis[producao->origem].first, &gramatica->variaveis[simbolo->id.variavel].first[k], NULL) == -1) {
+					if (_plist_find(gramatica->variaveis[producao->origem].first, &gramatica->variaveis[simbolo->id.variavel].first[k], token_cmp) == -1) {
 						plist_append(gramatica->variaveis[producao->origem].first, gramatica->variaveis[simbolo->id.variavel].first[k]);
 					}
 				}
@@ -159,7 +163,7 @@ static void calcular_follow(pcc_ll1_t *gramatica) {
 							 */
 
 							for (int32_t l = 0; l < plist_len(gramatica->variaveis[simbolo_k->id.variavel].first); l++) {
-								if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[simbolo_k->id.variavel].first[l], NULL) == -1) {
+								if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[simbolo_k->id.variavel].first[l], token_cmp) == -1) {
 									plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, gramatica->variaveis[simbolo_k->id.variavel].first[l]);
 									alteracao = true;
 								}
@@ -176,7 +180,7 @@ static void calcular_follow(pcc_ll1_t *gramatica) {
 					if (pode_ser_ultimo) {
 						// Adiciona o FOLLOW de producao->origem em simbolo_j.
 						for (int32_t l = 0; l < plist_len(gramatica->variaveis[producao->origem].follow); l++) {
-							if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[producao->origem].follow[l], NULL) == -1) {
+							if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &gramatica->variaveis[producao->origem].follow[l], token_cmp) == -1) {
 								plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, gramatica->variaveis[producao->origem].follow[l]);
 								alteracao = true;
 							}
@@ -186,4 +190,53 @@ static void calcular_follow(pcc_ll1_t *gramatica) {
 			}
 		}
 	} while (alteracao);
+}
+
+static void calcular_tabela_M(pcc_ll1_t *gramatica) {
+	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
+		const pcc_producao_t *producao = gramatica->producoes + i;
+
+		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
+			const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
+
+			if (simbolo_j->tipo == SIMBOLO_TERMINAL) {
+				struct pcc_ll1_M_t M;
+				M.producao_id = producao->origem;
+				M.token = simbolo_j->id.token;
+
+				plist_append(gramatica->variaveis[producao->origem].M, M);
+			} else {
+				for (size_t k = 0; k < plist_len(gramatica->variaveis[simbolo_j->id.variavel].first); k++) {
+					const pcc_simbolo_id_terminal_t *terminal = gramatica->variaveis[simbolo_j->id.variavel].first + k;
+
+					struct pcc_ll1_M_t M;
+					M.producao_id = producao->origem;
+					M.token = *terminal;
+
+					plist_append(gramatica->variaveis[producao->origem].M, M);
+				}
+
+				if (!gramatica->variaveis[simbolo_j->id.variavel].gera_vazio) {
+					break;
+				}
+			}
+		}
+	}
+}
+
+static int token_cmp(const void *tk1, const void *tk2) {
+	const pcc_simbolo_id_terminal_t *token1 = tk1;
+	const pcc_simbolo_id_terminal_t *token2 = tk2;
+
+	int td = token1->tipo - token2->tipo;
+	if (td != 0) {
+		return td;
+	}
+
+	int std = token1->subtipo - token2->subtipo;
+	if (std != 0) {
+		return std;
+	}
+
+	return 0;
 }

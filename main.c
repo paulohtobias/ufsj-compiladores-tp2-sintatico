@@ -74,6 +74,21 @@ int main(int argc, char const *argv[]) {
 				putchar(tolower(*str));
 			}
 		}
+
+		printf("\n\tM:");
+		for (size_t j = 0; j < plist_len(variavel->M); j++) {
+			const struct pcc_ll1_M_t *M = variavel->M + j;
+
+			printf("\n\t\t%2d: ", M->producao_id);
+
+			token_t token;
+			token.tipo = M->token.tipo;
+			token.subtipo = M->token.subtipo;
+			for (const char *str = token_tipo_str(&token); *str != '\0'; str++) {
+				putchar(tolower(*str));
+			}
+		}
+
 		puts("");
 	}
 

@@ -35,7 +35,10 @@ typedef struct pcc_variavel_t {
 	pcc_simbolo_id_terminal_t *first;
 	pcc_simbolo_id_terminal_t *follow;
 
-	/// TODO: tabela M.
+	struct pcc_ll1_M_t {
+		pcc_simbolo_id_terminal_t token;
+		uint32_t producao_id;
+	} *M;
 } pcc_variavel_t;
 
 typedef union pcc_simbolo_id_u {
