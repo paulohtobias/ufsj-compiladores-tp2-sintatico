@@ -109,7 +109,7 @@ void token_adicionar(const token_t *token) {
 }
 
 void token_print(FILE *out, const token_t *token) {
-	const char * subtipo = token_subtipo_str(token);
+	const char *subtipo = token_subtipo_str(token);
 	if (*subtipo == '\0') {
 		subtipo = "N/A";
 	}
