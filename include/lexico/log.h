@@ -11,7 +11,7 @@
 #define LOG_H
 
 #include <stdio.h>
-#include "lexico/utils.h"
+#include "utils.h"
 
 // Erros do código.
 

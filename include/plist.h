@@ -11,6 +11,7 @@
 #define PLIST_H
 
 #include <stddef.h>
+#include <unistd.h>
 
 // Custom capacity increment.
 #ifndef PLIST_CAPACITY_INCREMENT
@@ -66,22 +67,38 @@ typedef struct plist_t {
 #define plist_cap(list) \
 	((list) != NULL ? ((plist_t *) __PLIST_L2P(list))->capacity : 0)
 
-#define plist_insert(list, item, index) \
+#define plist_put(list, item, index) \
 	do { \
 		plist_t *plist = __PLIST_L2P(list); \
 		if ((list) == NULL) { \
 			plist_create(list, PLIST_CAPACITY_INCREMENT); \
 			plist = __PLIST_L2P(list); \
 		} else if (index >= plist->capacity) { \
-			__PLIST_RESIZE(plist, list, plist->capacity + PLIST_CAPACITY_INCREMENT); \
+			__PLIST_RESIZE(plist, list, index + PLIST_CAPACITY_INCREMENT); \
 		} \
 \
 		(list)[(index)] = (item); \
 		plist->length++; \
 	} while(0);
 
-#define plist_append(list, item) plist_insert(list, item, plist_len(list))
+#define plist_append(list, item) plist_put(list, item, plist_len(list))
 
 #define plist_free(list) PLIST_FREE(__PLIST_L2P(list))
+
+#define PLIST_FIND(list, item, index) \
+	do { \
+		index = -1; \
+		for (size_t i = 0; i < plist->length; i++) { \
+            if (list[i] == item) { \
+                index = i; \
+                break; \
+            } \
+		} \
+	} while (0);
+
+
+#define _plist_find(list, item, cmp) __plist_find(list, item, sizeof *(item), cmp)
+
+ssize_t __plist_find(const void *list, const void *item, size_t item_size, int (*cmp)(const void *, const void *));
 
 #endif // PLIST_H

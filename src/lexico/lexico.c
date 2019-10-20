@@ -10,7 +10,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "lexico/lexico.h"
-#include "lexico/utils.h"
+#include "utils.h"
 
 afd_t *afd_lexico = NULL;
 int lexico_init() {

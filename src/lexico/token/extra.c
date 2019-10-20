@@ -9,27 +9,9 @@
 
 #include <string.h>
 #include "lexico/token.h"
-#include "lexico/utils.h"
-#include "lexico/plist.h"
-
-// X-Macro pra cada tipo de extra.
-#define SUBTIPOS \
-	SUBTIPO(TK_EXT_PAR_A, "(", "parenteses-abrir") \
-	SUBTIPO(TK_EXT_PAR_F, ")", "parenteses-fechar") \
-	SUBTIPO(TK_EXT_COL_A, "[", "colchete-abrir") \
-	SUBTIPO(TK_EXT_COL_F, "]", "colchete-fechar") \
-	SUBTIPO(TK_EXT_CHA_A, "{", "chave-abrir") \
-	SUBTIPO(TK_EXT_CHA_F, "}", "chave-fechar") \
-	SUBTIPO(TK_EXT_VIRGULA, ",", "virgula") \
-	SUBTIPO(TK_EXT_DOIS_PONTOS, ":", "dois-pontos") \
-	SUBTIPO(TK_EXT_PT_VIRGULA, ";", "ponto-virgula")
-
-/// Tipos de extra.
-#define SUBTIPO(cod, lex, str) cod,
-enum {
-	SUBTIPOS
-};
-#undef SUBTIPO
+#include "lexico/token/extra.h"
+#include "utils.h"
+#include "plist.h"
 
 /// Tipos de extra em string.
 #define SUBTIPO(cod, lex, str) str,

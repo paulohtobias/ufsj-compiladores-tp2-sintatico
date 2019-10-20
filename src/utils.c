@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include "lexico/utils.h"
+#include "utils.h"
 #include "lexico/log.h"
 
 char *file_to_str(const char *filename, size_t *len) {

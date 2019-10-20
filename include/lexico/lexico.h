@@ -11,6 +11,11 @@
 #define LEXICO_H
 
 #include "lexico/token.h"
+#include "lexico/token/palavra-chave.h"
+#include "lexico/token/constante.h"
+#include "lexico/token/operador.h"
+#include "lexico/token/extra.h"
+#include "lexico/token/preprocessador.h"
 
 int lexico_init();
 
