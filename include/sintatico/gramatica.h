@@ -21,6 +21,6 @@ extern pcc_ll1_t gramatica;
 
 void pcc_gramatica_init();
 
-void pcc_gramatica_teste();
+void pcc_gramatica_teste(const char *nome_arquivo);
 
 #endif // GRAMATICA_H

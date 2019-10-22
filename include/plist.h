@@ -97,7 +97,7 @@ typedef struct plist_t {
 	} while (0);
 
 
-#define _plist_find(list, item, cmp) __plist_find(list, item, sizeof *(item), cmp)
+#define _plist_find(list, item, cmp) __plist_find(list, item, sizeof *(list), cmp)
 
 ssize_t __plist_find(const void *list, const void *item, size_t item_size, int (*cmp)(const void *, const void *));
 

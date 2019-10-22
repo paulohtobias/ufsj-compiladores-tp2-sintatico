@@ -96,7 +96,9 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
 		if (plist_len(producao->simbolos) > 0 && producao->simbolos[0].tipo == SIMBOLO_TERMINAL) {
-			plist_append(gramatica->variaveis[producao->origem].first, producao->simbolos[0].id.token);
+			if (_plist_find(gramatica->variaveis[producao->origem].first, &producao->simbolos[0].id.token, token_cmp) == -1) {
+				plist_append(gramatica->variaveis[producao->origem].first, producao->simbolos[0].id.token);
+			}
 		}
 	}
 
@@ -199,30 +201,58 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
+		// FIRST
 		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
 			const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
 
 			if (simbolo_j->tipo == SIMBOLO_TERMINAL) {
 				struct pcc_ll1_M_t M;
-				M.producao_id = producao->origem;
+				M.producao_id = producao->id;
 				M.token = simbolo_j->id.token;
 
-				plist_append(gramatica->variaveis[producao->origem].M, M);
+				/// TODO: debugar essas verificações (linha 232 tbm)
+				int32_t producao_id = _plist_find(gramatica->variaveis[producao->origem].M, &M, token_cmp);
+				if (producao_id != -1) {
+					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
+						LOG_PCC_ERRO(1, NULL,
+							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
+							simbolo_j->id.token.str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+						);
+					}
+				} else {
+					plist_append(gramatica->variaveis[producao->origem].M, M);
+				}
+				break;
 			} else {
 				for (size_t k = 0; k < plist_len(gramatica->variaveis[simbolo_j->id.variavel].first); k++) {
 					const pcc_simbolo_id_terminal_t *terminal = gramatica->variaveis[simbolo_j->id.variavel].first + k;
 
 					struct pcc_ll1_M_t M;
-					M.producao_id = producao->origem;
+					M.producao_id = producao->id;
 					M.token = *terminal;
 
-					plist_append(gramatica->variaveis[producao->origem].M, M);
+					int32_t producao_id = _plist_find(gramatica->variaveis[producao->origem].M, &M, token_cmp);
+					if (producao_id != -1) {
+						if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
+							LOG_PCC_ERRO(1, NULL,
+								"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
+								terminal->str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+							);
+						}
+					} else {
+						plist_append(gramatica->variaveis[producao->origem].M, M);
+					}
 				}
 
 				if (!gramatica->variaveis[simbolo_j->id.variavel].gera_vazio) {
 					break;
 				}
 			}
+		}
+
+		// FOLLOW
+		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
+			const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
 		}
 	}
 }
@@ -249,7 +279,7 @@ static void pilha_inserir(pcc_simbolo_t **pilha, pcc_simbolo_t *simbolos, size_t
 		simbolos_qtd = plist_len(simbolos);
 	}
 
-	for (size_t i = simbolos_qtd - 1; i >= 0; i++) {
+	for (int32_t i = simbolos_qtd - 1; i >= 0; i--) {
 		plist_append(*pilha, simbolos[i]);
 	}
 }
@@ -313,7 +343,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 				erro = true;
 			} else {
-				const pcc_producao_t *producao = &gramatica->producoes[producao_id];
+				const pcc_producao_t *producao = &gramatica->producoes[variavel_topo->M[producao_id].producao_id];
 
 				pilha_remover(&pilha);
 				pilha_inserir(&pilha, producao->simbolos, 0);
@@ -323,14 +353,22 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		// Se houve um erro, avança até um ; e recomeça a análise a partir
 		// do próximo token.
 		if (erro) {
-			while (!(lista_tokens[i].tipo == TK_EXT && lista_tokens[i].subtipo == TK_EXT_PT_VIRGULA)) {
+			while (i < lista_tokens_qtd && !(lista_tokens[i].tipo == TK_EXT && lista_tokens[i].subtipo == TK_EXT_PT_VIRGULA)) {
 				i++;
 			}
+			i++;
 
-			// TODO: precisa mexer na pilha também?
+			/// TODO: precisa mexer na pilha também? SIM
+			while (plist_len(pilha) > 0) {
+				pilha_remover(&pilha);
+			}
+			pilha_inserir(&pilha, &inicio, 1);
 		}
 	}
 
+	/// TODO: checar se a pilha ficou vazia.
+
+	printf("Reconhecido\n");
 }
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_t variavel_str_tam) {
@@ -341,7 +379,7 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 		printf("%2d: " COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) " ->", producao->id, VSTR(producao->origem));
 
 		if (plist_len(producao->simbolos) == 0) {
-			printf(COR(";40") COR_NEGRITO(_AZUL) " Ɛ" COR(_RESET));
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "Ɛ" COR(_RESET));
 		} else {
 			for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
 				const pcc_simbolo_t *simbolo = producao->simbolos + j;

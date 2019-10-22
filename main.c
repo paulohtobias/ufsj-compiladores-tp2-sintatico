@@ -5,8 +5,11 @@
 #include "sintatico/gramatica.h"
 
 int main(int argc, char const *argv[]) {
+	if (argc < 2) {
+		LOG_PCC_ERRO(1, NULL, "missing filename");
+	}
 
-	pcc_gramatica_teste();
+	pcc_gramatica_teste(argv[1]);
 
 	return 0;
 }

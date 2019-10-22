@@ -22,6 +22,6 @@ int lexico_init();
 
 void lexico_finalizar();
 
-int lexico_parse(const char *src);
+int lexico_parse(const char *nome_arquivo);
 
 #endif // LEXICO_H

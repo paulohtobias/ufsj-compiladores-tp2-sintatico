@@ -18,20 +18,21 @@ void pcc_gramatica_init() {
 	// TODO
 }
 
-void pcc_gramatica_teste() {
+void pcc_gramatica_teste(const char *nome_arquivo) {
 	enum {
 		PCC_D,
 		PCC_T,
-		PCC_IL
+		PCC_IL,
+		PCC_ILL
 	};
 
 	char vstr[][6] = {
-		"D", "T", "IL"
+		"D", "T", "IL", "ILL'"
 	};
 
-	pcc_ll1_init(&gramatica, 3);
+	pcc_ll1_init(&gramatica, 4);
 
-	pcc_producao_t producoes[5] = {0};
+	pcc_producao_t producoes[6] = {0};
 	int i = 0;
 	{
 		producoes[i].origem = PCC_D;
@@ -84,7 +85,11 @@ void pcc_gramatica_teste() {
 		pcc_simbolo_t simbolos[] = {
 			{
 				SIMBOLO_TERMINAL,
-				{.token={TK_ID, 0, "identificador"}}
+				{.token={TK_ID, 0, "id"}}
+			},
+			{
+				SIMBOLO_VARIAVEL,
+				{.variavel=PCC_ILL}
 			}
 		};
 		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
@@ -94,19 +99,19 @@ void pcc_gramatica_teste() {
 		i++;
 	}
 	{
-		producoes[i].origem = PCC_IL;
+		producoes[i].origem = PCC_ILL;
 		pcc_simbolo_t simbolos[] = {
-			{
-				SIMBOLO_TERMINAL,
-				{.token={TK_ID, 0, "identificador"}}
-			},
 			{
 				SIMBOLO_TERMINAL,
 				{.token={TK_EXT, TK_EXT_VIRGULA, ","}}
 			},
 			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_ID, 0, "id"}}
+			},
+			{
 				SIMBOLO_VARIAVEL,
-				{.variavel=PCC_IL}
+				{.variavel=PCC_ILL}
 			}
 		};
 		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
@@ -115,13 +120,25 @@ void pcc_gramatica_teste() {
 		pcc_ll1_add_producao(&gramatica, producoes[i]);
 		i++;
 	}
+	{
+		producoes[i].origem = PCC_ILL;
+		producoes[i].simbolos = NULL;
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
 
 	pcc_ll1_calcular(&gramatica);
 
 	pcc_ll1_print(&gramatica, (char *) vstr, sizeof vstr[0]);
+
+	lexico_init();
+
+	lexico_parse(nome_arquivo);
+
+	pcc_ll1_reconhecer(&gramatica, lista_tokens);
 }
 
-void pcc_gramatica_teste1() {
+void pcc_gramatica_teste1(const char *nome_arquivo) {
 	// Teste
 
 	enum {
@@ -155,15 +172,15 @@ void pcc_gramatica_teste1() {
 	pcc_simbolo_t simbolos12[] = {
 		{
 			SIMBOLO_TERMINAL,
-			{.token={TK_EXT, TK_EXT_PT_VIRGULA}}
-		},
-		{
-			SIMBOLO_VARIAVEL,
-			{.variavel=PCC_LL}
+			{.token={TK_EXT, TK_EXT_PT_VIRGULA, ";"}}
 		},
 		{
 			SIMBOLO_VARIAVEL,
 			{.variavel=PCC_S}
+		},
+		{
+			SIMBOLO_VARIAVEL,
+			{.variavel=PCC_LL}
 		}
 	};
 	for (int j = 0; j < sizeof simbolos12 / sizeof simbolos12[0]; j++) {
@@ -181,7 +198,7 @@ void pcc_gramatica_teste1() {
 	pcc_simbolo_t simbolos14[] = {
 		{
 			SIMBOLO_TERMINAL,
-			{.token={TK_KW, TK_KW_RETURN}}
+			{.token={TK_ID, 0, "id"}}
 		}
 	};
 	for (int j = 0; j < sizeof simbolos14 / sizeof simbolos14[0]; j++) {
