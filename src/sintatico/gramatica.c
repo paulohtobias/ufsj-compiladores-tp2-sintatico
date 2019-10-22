@@ -19,6 +19,109 @@ void pcc_gramatica_init() {
 }
 
 void pcc_gramatica_teste() {
+	enum {
+		PCC_D,
+		PCC_T,
+		PCC_IL
+	};
+
+	char vstr[][6] = {
+		"D", "T", "IL"
+	};
+
+	pcc_ll1_init(&gramatica, 3);
+
+	pcc_producao_t producoes[5] = {0};
+	int i = 0;
+	{
+		producoes[i].origem = PCC_D;
+		pcc_simbolo_t simbolos[] = {
+			{
+				SIMBOLO_VARIAVEL,
+				{.variavel=PCC_T}
+			},
+			{
+				SIMBOLO_VARIAVEL,
+				{.variavel=PCC_IL}
+			}
+		};
+		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
+			plist_append(producoes[i].simbolos, simbolos[j]);
+		}
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
+	{
+		producoes[i].origem = PCC_T;
+		pcc_simbolo_t simbolos[] = {
+			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_KW, TK_KW_INT, "int"}}
+			}
+		};
+		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
+			plist_append(producoes[i].simbolos, simbolos[j]);
+		}
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
+	{
+		producoes[i].origem = PCC_T;
+		pcc_simbolo_t simbolos[] = {
+			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_KW, TK_KW_FLOAT, "float"}}
+			}
+		};
+		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
+			plist_append(producoes[i].simbolos, simbolos[j]);
+		}
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
+	{
+		producoes[i].origem = PCC_IL;
+		pcc_simbolo_t simbolos[] = {
+			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_ID, 0, "identificador"}}
+			}
+		};
+		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
+			plist_append(producoes[i].simbolos, simbolos[j]);
+		}
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
+	{
+		producoes[i].origem = PCC_IL;
+		pcc_simbolo_t simbolos[] = {
+			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_ID, 0, "identificador"}}
+			},
+			{
+				SIMBOLO_TERMINAL,
+				{.token={TK_EXT, TK_EXT_VIRGULA, ","}}
+			},
+			{
+				SIMBOLO_VARIAVEL,
+				{.variavel=PCC_IL}
+			}
+		};
+		for (int j = 0; j < sizeof simbolos / sizeof simbolos[0]; j++) {
+			plist_append(producoes[i].simbolos, simbolos[j]);
+		}
+		pcc_ll1_add_producao(&gramatica, producoes[i]);
+		i++;
+	}
+
+	pcc_ll1_calcular(&gramatica);
+
+	pcc_ll1_print(&gramatica, (char *) vstr, sizeof vstr[0]);
+}
+
+void pcc_gramatica_teste1() {
 	// Teste
 
 	enum {

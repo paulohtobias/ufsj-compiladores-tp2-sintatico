@@ -27,6 +27,8 @@ enum {
 typedef struct pcc_simbolo_id_terminal_t {
 	uint32_t tipo;
 	uint32_t subtipo;
+
+	const char *str;
 } pcc_simbolo_id_terminal_t;
 
 typedef struct pcc_variavel_t {
@@ -84,6 +86,8 @@ void pcc_ll1_init(pcc_ll1_t *gramatica, uint16_t qtd_variaveis);
 void pcc_ll1_add_producao(pcc_ll1_t *gramatica, pcc_producao_t producao);
 
 void pcc_ll1_calcular(pcc_ll1_t *gramatica);
+
+void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_t variavel_str_tam);
 

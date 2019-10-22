@@ -11,7 +11,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include "utils.h"
-#include "lexico/log.h"
+#include "log.h"
 
 char *file_to_str(const char *filename, size_t *len) {
 	*len = 0;

@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "utils.h"
+#include "log.h"
 #include "plist.h"
-#include "lexico/token.h"
+#include "lexico/lexico.h"
 #include "sintatico/ll1.h"
 
 static int token_cmp(const void *tk1, const void *tk2);
@@ -244,33 +244,114 @@ static int token_cmp(const void *tk1, const void *tk2) {
 	return 0;
 }
 
+static void pilha_inserir(pcc_simbolo_t **pilha, pcc_simbolo_t *simbolos, size_t simbolos_qtd) {
+	if (simbolos_qtd == 0) {
+		simbolos_qtd = plist_len(simbolos);
+	}
+
+	for (size_t i = simbolos_qtd - 1; i >= 0; i++) {
+		plist_append(*pilha, simbolos[i]);
+	}
+}
+
+static pcc_simbolo_t pilha_remover(pcc_simbolo_t **pilha) {
+	plist_t *plist = __PLIST_L2P(*pilha);
+
+	// Não deve acontecer nunca.
+	if (plist->length == 0) {
+		return (pcc_simbolo_t) {0};
+	}
+
+	return (*pilha)[plist->length--];
+}
+
+void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
+	pcc_simbolo_t *pilha = NULL;
+
+	pcc_simbolo_t inicio = {SIMBOLO_VARIAVEL, {.variavel=gramatica->variavel_inicial}};
+
+	pilha_inserir(&pilha, &inicio, 1);
+
+	size_t i = 0, lista_tokens_qtd = plist_len(lista_tokens);
+	while (i < lista_tokens_qtd) {
+		bool erro = false;
+
+		// Se o topo da pilha for um terminal
+		const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
+		if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
+
+			/*
+			 * Se os símbolos forem diferentes, isto é um erro.
+			 * Note que, apesar de pilha_topo->id.token e lista_tokens[i]
+			 * serem de tipos diferentes, a comparação é possível.
+			 */
+			if (token_cmp(&pilha_topo->id.token, &lista_tokens[i])) {
+				// TODO: melhorar mensagem de erro.
+				LOG_ERRO(
+					lista_tokens[i].contexto.arquivo,
+					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
+					lista_tokens[i].contexto.lexema, lista_tokens[i].contexto.comprimento,
+					"símbolo inesperado");
+				erro = true;
+			} else {
+				pilha_remover(&pilha);
+				i++;
+			}
+		} else {
+			/// TODO: tratar substituição de variável.
+
+			const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
+
+			int32_t producao_id = _plist_find(variavel_topo->M, &lista_tokens[i], token_cmp);
+			if (producao_id == -1) {
+				// TODO: melhorar mensagem de erro.
+				LOG_ERRO(
+					lista_tokens[i].contexto.arquivo,
+					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
+					lista_tokens[i].contexto.lexema, lista_tokens[i].contexto.comprimento,
+					"não existe uma produção para este símbolo");
+
+				erro = true;
+			} else {
+				const pcc_producao_t *producao = &gramatica->producoes[producao_id];
+
+				pilha_remover(&pilha);
+				pilha_inserir(&pilha, producao->simbolos, 0);
+			}
+		}
+
+		// Se houve um erro, avança até um ; e recomeça a análise a partir
+		// do próximo token.
+		if (erro) {
+			while (!(lista_tokens[i].tipo == TK_EXT && lista_tokens[i].subtipo == TK_EXT_PT_VIRGULA)) {
+				i++;
+			}
+
+			// TODO: precisa mexer na pilha também?
+		}
+	}
+
+}
+
 void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_t variavel_str_tam) {
 	#define VSTR(i) (_variaveis_str + (i) * variavel_str_tam)
 	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
-		printf("%2d:" COR_NEGRITO(_VERDE) " %-2s " COR(_RESET) "->", producao->id, VSTR(producao->origem));
+		printf("%2d: " COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) " ->", producao->id, VSTR(producao->origem));
 
 		if (plist_len(producao->simbolos) == 0) {
-			printf(COR_NEGRITO(_AZUL) " Ɛ" COR(_RESET));
+			printf(COR(";40") COR_NEGRITO(_AZUL) " Ɛ" COR(_RESET));
 		} else {
 			for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
 				const pcc_simbolo_t *simbolo = producao->simbolos + j;
 
 				if (simbolo->tipo == SIMBOLO_TERMINAL) {
-					printf(COR_NEGRITO(_AZUL));
-					token_t token;
-					token.tipo = simbolo->id.token.tipo;
-					token.subtipo = simbolo->id.token.subtipo;
-
-					putchar(' ');
-					for (const char *str = token_tipo_str(&token); *str != '\0'; str++) {
-						putchar(tolower(*str));
-					}
+					printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s", simbolo->id.token.str);
 				} else {
-					printf(COR_NEGRITO(_VERDE));
-					printf(" %s", VSTR(simbolo->id.variavel));
+					printf(" " COR(";40") COR_NEGRITO(_VERDE) "%s", VSTR(simbolo->id.variavel));
 				}
+				printf(COR(_RESET));
 			}
 		}
 
@@ -280,36 +361,22 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 	for (size_t i = 0; i < plist_len(gramatica->variaveis); i++) {
 		const pcc_variavel_t *variavel = gramatica->variaveis + i;
 
-		printf(COR_NEGRITO(_VERDE) "%-2s" COR(_RESET) ":\n", VSTR(variavel->cod));
+		printf(COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) ":\n", VSTR(variavel->cod));
 
 		printf("\tVazio: %s\n", variavel->gera_vazio ? "sim" : "não");
 
-		printf("\tFIRST: ");
+		printf("\tFIRST:");
 		for (size_t j = 0; j < plist_len(variavel->first); j++) {
 			const pcc_simbolo_id_terminal_t *terminal = variavel->first + j;
 
-			token_t token;
-			token.tipo = terminal->tipo;
-			token.subtipo = terminal->subtipo;
-
-			printf(COR_NEGRITO(_AZUL) " ");
-			for (const char *str = token_tipo_str(&token); *str != '\0'; str++) {
-				putchar(tolower(*str));
-			}
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), terminal->str);
 		}
 
-		printf(COR(_RESET) "\n\tFOLLOW: ");
+		printf(COR(_RESET) "\n\tFOLLOW:");
 		for (size_t j = 0; j < plist_len(variavel->follow); j++) {
 			const pcc_simbolo_id_terminal_t *terminal = variavel->follow + j;
 
-			token_t token;
-			token.tipo = terminal->tipo;
-			token.subtipo = terminal->subtipo;
-
-			printf(COR_NEGRITO(_AZUL) " ");
-			for (const char *str = token_tipo_str(&token); *str != '\0'; str++) {
-				putchar(tolower(*str));
-			}
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), terminal->str);
 		}
 
 		printf(COR(_RESET) "\n\tM:");
@@ -318,14 +385,7 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 
 			printf(COR(_RESET) "\n\t\t%2d: ", M->producao_id);
 
-			token_t token;
-			token.tipo = M->token.tipo;
-			token.subtipo = M->token.subtipo;
-
-			printf(COR_NEGRITO(_AZUL) " ");
-			for (const char *str = token_tipo_str(&token); *str != '\0'; str++) {
-				putchar(tolower(*str));
-			}
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), M->token.str);
 		}
 
 		puts(COR(_RESET));

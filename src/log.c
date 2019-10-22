@@ -7,7 +7,7 @@
  * paulohtobias@outlook.com
  */
 
-#include "lexico/log.h"
+#include "log.h"
 
 uint32_t _log_warnings = 0;
 uint32_t _log_erros = 0;
