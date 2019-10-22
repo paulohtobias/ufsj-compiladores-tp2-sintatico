@@ -202,6 +202,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
 		// FIRST
+		bool gera_vazio = true;
 		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
 			const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
 
@@ -222,6 +223,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 				} else {
 					plist_append(gramatica->variaveis[producao->origem].M, M);
 				}
+				gera_vazio = false;
 				break;
 			} else {
 				for (size_t k = 0; k < plist_len(gramatica->variaveis[simbolo_j->id.variavel].first); k++) {
@@ -245,14 +247,33 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 				}
 
 				if (!gramatica->variaveis[simbolo_j->id.variavel].gera_vazio) {
+					gera_vazio = false;
 					break;
 				}
 			}
 		}
 
 		// FOLLOW
-		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
-			const pcc_simbolo_t *simbolo_j = producao->simbolos + j;
+		if (gera_vazio) {
+			for (size_t j = 0; j < plist_len(gramatica->variaveis[producao->origem].follow); j++) {
+				const pcc_simbolo_id_terminal_t *terminal = gramatica->variaveis[producao->origem].follow + j;
+
+				struct pcc_ll1_M_t M;
+				M.producao_id = producao->id;
+				M.token = *terminal;
+
+				int32_t producao_id = _plist_find(gramatica->variaveis[producao->origem].M, &M, token_cmp);
+				if (producao_id != -1) {
+					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
+						LOG_PCC_ERRO(1, NULL,
+							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
+							terminal->str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+						);
+					}
+				} else {
+					plist_append(gramatica->variaveis[producao->origem].M, M);
+				}
+			}
 		}
 	}
 }
@@ -303,7 +324,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	pilha_inserir(&pilha, &inicio, 1);
 
 	size_t i = 0, lista_tokens_qtd = plist_len(lista_tokens);
-	while (i < lista_tokens_qtd) {
+	while (i < lista_tokens_qtd && plist_len(pilha) > 0) {
 		bool erro = false;
 
 		// Se o topo da pilha for um terminal
@@ -366,7 +387,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		}
 	}
 
-	/// TODO: checar se a pilha ficou vazia.
+	/// TODO: checar se a pilha ficou vazia ou ainda sobraram tokenss.
 
 	printf("Reconhecido\n");
 }
