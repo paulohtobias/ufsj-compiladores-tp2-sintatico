@@ -101,6 +101,12 @@ int token_preprocessador_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_PP], __preprocessadores_quantidade);
 	memset(tabela_simbolos[TK_PP], 0, __preprocessadores_quantidade * sizeof *tabela_simbolos[TK_PP]);
 
+	// Inicializando a matriz de descrição.
+	#define TK_PP_SUBTIPO(cod, nome) \
+		plist_append(__token_str[TK_PP], #nome);
+
+	TK_PP_SUBTIPOS
+	#undef TK_PP_SUBTIPO
 fim:
 	return res;
 }

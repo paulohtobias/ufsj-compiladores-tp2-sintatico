@@ -36,6 +36,8 @@ enum {
 };
 #undef TOKEN_CODIGO
 
+extern char **__token_str[TK_COUNT];
+
 /// Funções init.
 #define TOKEN_CODIGO(cod, nome, descricao) int token_ ## nome ## _init(afd_t *afd);
 TOKEN_CODIGOS
@@ -103,6 +105,18 @@ const char *token_tipo_str(const token_t *token);
  * Se o subtipo for inválido, retorna uma string vazia.
  */
 const char *token_subtipo_str(const token_t *token);
+
+/**
+ * Retorna uma string correspondente ao tipo e subtipo
+ * do token sem a necessidade de se ter um token.
+ */
+const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo);
+
+/**
+ * Retorna o tipo e o subtipo de um token a partir de
+ * uma string.
+ */
+bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo);
 
 /**
  * Função genérica para criar um novo token.

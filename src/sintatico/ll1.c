@@ -387,6 +387,8 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		}
 	}
 
+	/// TODO: remover todo mundo da pilha que gera vazio.
+
 	/// TODO: checar se a pilha ficou vazia ou ainda sobraram tokenss.
 
 	printf("Reconhecido\n");

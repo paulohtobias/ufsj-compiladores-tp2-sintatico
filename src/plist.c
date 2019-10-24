@@ -17,7 +17,7 @@ ssize_t __plist_find(const void *list, const void *item, size_t item_size, int (
 	}
 
 	for (size_t i = 0; i < plist->length; i++) {
-		void *list_item = plist->data + i * item_size;
+		const void *list_item = list + i * item_size;
 		if (cmp == NULL) {
 			if (memcmp(list_item, item, item_size) == 0) {
 				return i;

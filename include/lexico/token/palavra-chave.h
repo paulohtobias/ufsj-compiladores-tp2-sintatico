@@ -13,46 +13,46 @@
 #include "lexico/token.h"
 
 // X-Macro pra cada palavra chave.
-#define SUBTIPOS \
-	SUBTIPO(TK_KW_AUTO, "auto") \
-	SUBTIPO(TK_KW_BREAK, "break") \
-	SUBTIPO(TK_KW_CASE, "case") \
-	SUBTIPO(TK_KW_CHAR, "char") \
-	SUBTIPO(TK_KW_CONST, "const") \
-	SUBTIPO(TK_KW_CONTINUE, "continue") \
-	SUBTIPO(TK_KW_DEFAULT, "default") \
-	SUBTIPO(TK_KW_DO, "do") \
-	SUBTIPO(TK_KW_DOUBLE, "double") \
-	SUBTIPO(TK_KW_ELSE, "else") \
-	SUBTIPO(TK_KW_ENUM, "enum") \
-	SUBTIPO(TK_KW_EXTERN, "extern") \
-	SUBTIPO(TK_KW_FLOAT, "float") \
-	SUBTIPO(TK_KW_FOR, "for") \
-	SUBTIPO(TK_KW_GOTO, "goto") \
-	SUBTIPO(TK_KW_IF, "if") \
-	SUBTIPO(TK_KW_INT, "int") \
-	SUBTIPO(TK_KW_LONG, "long") \
-	SUBTIPO(TK_KW_REGISTER, "register") \
-	SUBTIPO(TK_KW_RETURN, "return") \
-	SUBTIPO(TK_KW_SHORT, "short") \
-	SUBTIPO(TK_KW_SIGNED, "signed") \
-	SUBTIPO(TK_KW_SIZEOF, "sizeof") \
-	SUBTIPO(TK_KW_STATIC, "static") \
-	SUBTIPO(TK_KW_STRUCT, "struct") \
-	SUBTIPO(TK_KW_SWITCH, "switch") \
-	SUBTIPO(TK_KW_TYPEDEF, "typedef") \
-	SUBTIPO(TK_KW_UNION, "union") \
-	SUBTIPO(TK_KW_UNSIGNED, "unsigned") \
-	SUBTIPO(TK_KW_VOID, "void") \
-	SUBTIPO(TK_KW_VOLATILE, "volatile") \
-	SUBTIPO(TK_KW_WHILE, "while")
+#define TK_KW_SUBTIPOS \
+	TK_KW_SUBTIPO(TK_KW_AUTO, "auto") \
+	TK_KW_SUBTIPO(TK_KW_BREAK, "break") \
+	TK_KW_SUBTIPO(TK_KW_CASE, "case") \
+	TK_KW_SUBTIPO(TK_KW_CHAR, "char") \
+	TK_KW_SUBTIPO(TK_KW_CONST, "const") \
+	TK_KW_SUBTIPO(TK_KW_CONTINUE, "continue") \
+	TK_KW_SUBTIPO(TK_KW_DEFAULT, "default") \
+	TK_KW_SUBTIPO(TK_KW_DO, "do") \
+	TK_KW_SUBTIPO(TK_KW_DOUBLE, "double") \
+	TK_KW_SUBTIPO(TK_KW_ELSE, "else") \
+	TK_KW_SUBTIPO(TK_KW_ENUM, "enum") \
+	TK_KW_SUBTIPO(TK_KW_EXTERN, "extern") \
+	TK_KW_SUBTIPO(TK_KW_FLOAT, "float") \
+	TK_KW_SUBTIPO(TK_KW_FOR, "for") \
+	TK_KW_SUBTIPO(TK_KW_GOTO, "goto") \
+	TK_KW_SUBTIPO(TK_KW_IF, "if") \
+	TK_KW_SUBTIPO(TK_KW_INT, "int") \
+	TK_KW_SUBTIPO(TK_KW_LONG, "long") \
+	TK_KW_SUBTIPO(TK_KW_REGISTER, "register") \
+	TK_KW_SUBTIPO(TK_KW_RETURN, "return") \
+	TK_KW_SUBTIPO(TK_KW_SHORT, "short") \
+	TK_KW_SUBTIPO(TK_KW_SIGNED, "signed") \
+	TK_KW_SUBTIPO(TK_KW_SIZEOF, "sizeof") \
+	TK_KW_SUBTIPO(TK_KW_STATIC, "static") \
+	TK_KW_SUBTIPO(TK_KW_STRUCT, "struct") \
+	TK_KW_SUBTIPO(TK_KW_SWITCH, "switch") \
+	TK_KW_SUBTIPO(TK_KW_TYPEDEF, "typedef") \
+	TK_KW_SUBTIPO(TK_KW_UNION, "union") \
+	TK_KW_SUBTIPO(TK_KW_UNSIGNED, "unsigned") \
+	TK_KW_SUBTIPO(TK_KW_VOID, "void") \
+	TK_KW_SUBTIPO(TK_KW_VOLATILE, "volatile") \
+	TK_KW_SUBTIPO(TK_KW_WHILE, "while")
 
 /// Tipos de palavra-chave.
-#define SUBTIPO(cod, str) cod,
+#define TK_KW_SUBTIPO(cod, str) cod,
 enum {
-	SUBTIPOS
+	TK_KW_SUBTIPOS
 };
-#undef SUBTIPO
+#undef TK_KW_SUBTIPO
 
 
 int token_palavra_chave_buscar(const token_t *token);

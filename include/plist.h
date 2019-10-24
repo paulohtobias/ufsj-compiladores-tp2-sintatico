@@ -39,8 +39,6 @@
 typedef struct plist_t {
 	size_t capacity;
 	size_t length;
-
-	void *data;
 } plist_t;
 
 #define __PLIST_L2P(list) ((list) != NULL ? (void *) (list) - sizeof(plist_t) : NULL)
@@ -49,7 +47,7 @@ typedef struct plist_t {
 	do { \
 		plist = PLIST_REALLOC(plist, (new_capacity) * sizeof *(list) + sizeof *plist); \
 		plist->capacity = (new_capacity); \
-		plist->data = (list) = (void *) plist + sizeof *plist; \
+		(list) = (void *) plist + sizeof *plist; \
 	} while(0);
 
 #define plist_create(list, initial_capacity) \
@@ -67,9 +65,10 @@ typedef struct plist_t {
 #define plist_cap(list) \
 	((list) != NULL ? ((plist_t *) __PLIST_L2P(list))->capacity : 0)
 
-#define plist_put(list, item, index) \
+#define plist_put(list, item, _index) \
 	do { \
 		plist_t *plist = __PLIST_L2P(list); \
+		size_t index = (size_t) (_index); \
 		if ((list) == NULL) { \
 			plist_create(list, PLIST_CAPACITY_INCREMENT); \
 			plist = __PLIST_L2P(list); \

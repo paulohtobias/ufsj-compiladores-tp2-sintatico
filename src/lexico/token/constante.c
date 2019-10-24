@@ -73,6 +73,13 @@ int token_constante_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_CNST], __constantes_quantidade);
 	memset(tabela_simbolos[TK_CNST], 0, __constantes_quantidade * sizeof *tabela_simbolos[TK_CNST]);
 
+	// Inicializando a matriz de descrição.
+	#define TK_CNST_SUBTIPO(cod, nome, str) \
+		plist_append(__token_str[TK_CNST], str);
+
+	TK_CNST_SUBTIPOS
+	#undef TK_CNST_SUBTIPO
+
 	return 0;
 }
 static int str_init(afd_t *afd) {

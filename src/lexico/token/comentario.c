@@ -90,6 +90,9 @@ int token_comentario_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_CMT], 1);
 	tabela_simbolos[TK_CMT][0] = NULL;
 
+	// Inicializando a matriz de descrição.
+	plist_append(__token_str[TK_CMT], "comentário");
+
 fim:
 	return res;
 }

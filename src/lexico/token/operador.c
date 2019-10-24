@@ -248,6 +248,13 @@ int token_operador_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_OP], __operadores_quantidade);
 	memset(tabela_simbolos[TK_OP], 0, __operadores_quantidade * sizeof *tabela_simbolos[TK_OP]);
 
+	// Inicializando a matriz de descrição.
+	#define TK_OP_SUBTIPO(cod, lex, str) \
+		plist_append(__token_str[TK_OP], lex);
+
+	TK_OP_SUBTIPOS
+	#undef TK_OP_SUBTIPO
+
 fim:
 	return res;
 }

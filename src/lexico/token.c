@@ -19,6 +19,14 @@ const char __token_codigo_str[][64] = {
 };
 #undef TOKEN_CODIGO
 
+/**
+ * "Matriz(i, j, elem) de strings" onde
+ * i: tipo do token
+ * j: subtipo do token
+ * elem: representação em string do token
+ */
+char **__token_str[TK_COUNT] = {0};
+
 
 /// Lista de tokens.
 token_t *lista_tokens = NULL;
@@ -46,6 +54,7 @@ void token_finalizar() {
 			plist_free(tabela_simbolos[i][j]);
 		}
 		plist_free(tabela_simbolos[i]);
+		plist_free(__token_str[i]);
 	}
 }
 
@@ -63,6 +72,28 @@ const char *token_subtipo_str(const token_t *token) {
 	}
 
 	return "";
+}
+
+const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo) {
+	if (tipo >= TK_COUNT || subtipo >= plist_len(__token_str[tipo])) {
+		return "";
+	}
+
+	return __token_str[tipo][subtipo];
+}
+
+bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo) {
+	for (*tipo = 0; *tipo < TK_COUNT; (*tipo)++) {
+		for (*subtipo = 0; *subtipo < plist_len(__token_str[*tipo]); (*subtipo)++) {
+			if (strcmp(str, __token_str[*tipo][*subtipo]) == 0) {
+				return true;
+			}
+		}
+	}
+
+	*tipo = *subtipo = -1;
+
+	return false;
 }
 
 token_t token_criar(uint32_t tipo, uint32_t subtipo, const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {

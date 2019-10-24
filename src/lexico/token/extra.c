@@ -64,6 +64,13 @@ int token_extra_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_EXT], __extras_quantidade);
 	memset(tabela_simbolos[TK_EXT], 0, __extras_quantidade * sizeof *tabela_simbolos[TK_EXT]);
 
+	// Inicializando a matriz de descrição.
+	#define TK_EXT_SUBTIPO(cod, lex, str) \
+		plist_append(__token_str[TK_EXT], lex);
+
+	TK_EXT_SUBTIPOS
+	#undef TK_EXT_SUBTIPO
+
 fim:
 	return res;
 }

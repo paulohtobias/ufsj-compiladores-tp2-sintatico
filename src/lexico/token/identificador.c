@@ -48,6 +48,9 @@ int token_identificador_init(afd_t *afd) {
 	plist_create(tabela_simbolos[TK_ID], 1);
 	tabela_simbolos[TK_ID][0] = NULL;
 
+	// Inicializando a matriz de descrição.
+	plist_append(__token_str[TK_ID], "identificador");
+
 fim:
 	return res;
 }
