@@ -318,6 +318,7 @@ static pcc_simbolo_t pilha_remover(pcc_simbolo_t **pilha) {
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	pcc_simbolo_t *pilha = NULL;
+	int32_t *acoes = NULL;
 
 	pcc_simbolo_t inicio = {SIMBOLO_VARIAVEL, {.variavel=gramatica->variavel_inicial}};
 
@@ -346,11 +347,10 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				erro = true;
 			} else {
 				pilha_remover(&pilha);
+				plist_append(acoes, -1);
 				i++;
 			}
 		} else {
-			/// TODO: tratar substituição de variável.
-
 			const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
 
 			int32_t producao_id = _plist_find(variavel_topo->M, &lista_tokens[i], token_cmp);
@@ -368,6 +368,8 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 				pilha_remover(&pilha);
 				pilha_inserir(&pilha, producao->simbolos, 0);
+
+				plist_append(acoes, producao->id);
 			}
 		}
 
