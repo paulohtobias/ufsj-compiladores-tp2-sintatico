@@ -347,9 +347,18 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 	pcc_producao_t *producoes = NULL;
 
 	const int16_t *indice;
+
+	#define COMENTARIO -1
+	#define LINHA_VAZIA -2
 	int estado = 0;
 
 	while (fscanf(in, "%s", str) != EOF) {
+		// Ignora tudo após um # numa linha.
+		if (str[0] == '#') {
+			estado = COMENTARIO;
+		} else if (str[0] == '\0') {
+			estado = LINHA_VAZIA;
+		}
 
 		if (estado == 0) {
 			indice = pdict_get_value(variaveis, str);
@@ -386,15 +395,19 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 			plist_append(producao_atual.simbolos, simbolo);
 		}
 
-		estado++;
+		estado += estado >= 0;
 		if (fgetc(in) == '\n') {
-			plist_append(producoes, producao_atual);
+			if (estado >= 0) {
+				plist_append(producoes, producao_atual);
+			}
 
 			estado = 0;
 			producao_atual.simbolos = NULL;
 		}
 	}
 	fclose(in);
+	#undef COMENTARIO
+	#undef LINHA_VAZIA
 
 	int32_t keys_len;
 	char **variaveis_str = pdict_get_keys(variaveis, &keys_len, true);
