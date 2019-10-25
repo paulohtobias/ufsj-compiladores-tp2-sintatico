@@ -82,7 +82,7 @@ const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo) {
 	return __token_str[tipo][subtipo];
 }
 
-bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo) {
+bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo) {
 	for (*tipo = 0; *tipo < TK_COUNT; (*tipo)++) {
 		for (*subtipo = 0; *subtipo < plist_len(__token_str[*tipo]); (*subtipo)++) {
 			if (strcmp(str, __token_str[*tipo][*subtipo]) == 0) {
@@ -90,8 +90,6 @@ bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo) {
 			}
 		}
 	}
-
-	*tipo = *subtipo = -1;
 
 	return false;
 }

@@ -116,7 +116,7 @@ const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo);
  * Retorna o tipo e o subtipo de um token a partir de
  * uma string.
  */
-bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo);
+bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo);
 
 /**
  * Função genérica para criar um novo token.

@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include "log.h"
 #include "plist.h"
+#include "pdict.h"
 #include "lexico/lexico.h"
 #include "sintatico/ll1.h"
 
@@ -314,6 +315,91 @@ static pcc_simbolo_t pilha_remover(pcc_simbolo_t **pilha) {
 	}
 
 	return (*pilha)[plist->length--];
+}
+
+void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
+	// Abre o arquivo.
+	FILE *in = fopen(nome_arquivo, "r");
+	if (in == NULL) {
+		LOG_PCC_ERRO(1, "não foi possível abrir o arquivo", " ");
+	}
+
+	uint16_t variaveis_qtd = 0;
+
+	gramatica->producoes = NULL;
+	gramatica->variaveis = NULL;
+	gramatica->variavel_inicial = 0;
+
+	/// TODO: usar a pdict_create_all com um tamanho máximo grande o suficiente pra caber todas as variáveis
+	/// pra evitar recopiar o vetor.
+	pdict_t *variaveis = pdict_create();
+
+	char str[128];
+
+	pcc_producao_t producao_atual = (pcc_producao_t) {0};
+	pcc_producao_t *producoes = NULL;
+
+	const int16_t *indice;
+	int estado = 0;
+
+	lexico_init();
+
+	while (fscanf(in, "%s", str) != EOF) {
+		printf("%s\n", str);
+
+		if (estado == 0) {
+			printf("Produção nova: %s | ", str);
+			indice = pdict_get_value(variaveis, str);
+			if (indice == NULL) {
+				uint16_t *variavel_indice = malloc(sizeof *variavel_indice);
+				*variavel_indice = variaveis_qtd;
+				pdict_add_value(variaveis, str, variavel_indice);
+				indice = pdict_get_value(variaveis, str);
+
+				variaveis_qtd++;
+			}
+			producao_atual.origem = *indice;
+			printf("Indice: %d\n", producao_atual.origem);
+		} else if (estado > 1) {
+			pcc_simbolo_t simbolo;
+			pcc_simbolo_id_terminal_t token_id;
+			if (token_str_tipo_subtipo(str, &token_id.tipo, &token_id.subtipo)) {
+				simbolo.tipo = SIMBOLO_TERMINAL;
+				simbolo.id.token = token_id;
+				printf("Símbolo %s é token %d %d\n", str, simbolo.id.token.tipo, simbolo.id.token.subtipo);
+			} else {
+				simbolo.tipo = SIMBOLO_VARIAVEL;
+				indice = pdict_get_value(variaveis, str);
+				if (indice == NULL) {
+					uint16_t *variavel_indice = malloc(sizeof *variavel_indice);
+					*variavel_indice = variaveis_qtd;
+					pdict_add_value(variaveis, str, variavel_indice);
+					indice = pdict_get_value(variaveis, str);
+
+
+					variaveis_qtd++;
+				}
+				simbolo.id.variavel = *indice;
+				printf("Símbolo %s é var %d\n", str, simbolo.id.variavel);
+			}
+
+			plist_append(producao_atual.simbolos, simbolo);
+		}
+
+		estado++;
+		if (fgetc(in) == '\n') {
+			plist_append(producoes, producao_atual);
+
+			estado = 0;
+			producao_atual.simbolos = NULL;
+			putchar('\n');
+		}
+	}
+	fclose(in);
+
+	pcc_ll1_init(&gramatica, variaveis_qtd);
+
+	/// TODO: printar a gramática.
 }
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
