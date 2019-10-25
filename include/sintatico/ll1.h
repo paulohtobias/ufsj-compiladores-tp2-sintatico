@@ -89,6 +89,6 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo);
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 
-void pcc_ll1_print(const pcc_ll1_t *gramatica, const char * const *variaveis_str);
+void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str);
 
 #endif // LL1_H

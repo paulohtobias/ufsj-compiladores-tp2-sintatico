@@ -164,8 +164,10 @@ static void calcular_follow(pcc_ll1_t *gramatica) {
 						const pcc_simbolo_t *simbolo_k = producao->simbolos + k;
 
 						if (simbolo_k->tipo == SIMBOLO_TERMINAL) {
-							plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, simbolo_k->id.token);
-							alteracao = true;
+							if (_plist_find(gramatica->variaveis[simbolo_j->id.variavel].follow, &simbolo_k->id.token, token_cmp)) {
+								plist_append(gramatica->variaveis[simbolo_j->id.variavel].follow, simbolo_k->id.token);
+								alteracao = true;
+							}
 							pode_ser_ultimo = false;
 							break;
 						} else {
@@ -218,7 +220,6 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 				M.producao_id = producao->id;
 				M.token = simbolo_j->id.token;
 
-				/// TODO: debugar essas verificações (linha 232 tbm)
 				int32_t producao_id = _plist_find(gramatica->variaveis[producao->origem].M, &M, token_cmp);
 				if (producao_id != -1) {
 					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
@@ -397,6 +398,9 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 	}
 	fclose(in);
 
+	int32_t keys_len;
+	char **variaveis_str = pdict_get_keys(variaveis, &keys_len, true);
+
 	pcc_ll1_init(gramatica, variaveis_qtd);
 
 	for (size_t i = 0; i < plist_len(producoes); i++) {
@@ -405,10 +409,7 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 
 	pcc_ll1_calcular(gramatica);
 
-	int32_t keys_len;
-	char ** variaveis_str = pdict_get_keys(variaveis, &keys_len, true);
-
-	pcc_ll1_print(gramatica, variaveis_str);
+	pcc_ll1_print(gramatica, (const char **) variaveis_str);
 }
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
@@ -491,7 +492,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	printf("Reconhecido\n");
 }
 
-void pcc_ll1_print(const pcc_ll1_t *gramatica, const char * const *variaveis_str) {
+void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str) {
 	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
