@@ -103,42 +103,48 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 		}
 	}
 
-	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
-		const pcc_producao_t *producao = gramatica->producoes + i;
+	bool alteracao;
+	do {
+		alteracao = false;
+		for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
+			const pcc_producao_t *producao = gramatica->producoes + i;
 
-		for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
-			const pcc_simbolo_t *simbolo = producao->simbolos + j;
+			for (size_t j = 0; j < plist_len(producao->simbolos); j++) {
+				const pcc_simbolo_t *simbolo = producao->simbolos + j;
 
-			if (simbolo->tipo == SIMBOLO_TERMINAL) {
-				/*
-				 * Se o símbolo for um terminal, adicione-o à lista e
-				 * passe para a próxima produção.
-				 */
+				if (simbolo->tipo == SIMBOLO_TERMINAL) {
+					/*
+					* Se o símbolo for um terminal, adicione-o à lista e
+					* passe para a próxima produção.
+					*/
 
-				if (_plist_find(gramatica->variaveis[producao->origem].first, &simbolo->id.token, token_cmp) == -1) {
-					plist_append(gramatica->variaveis[producao->origem].first, simbolo->id.token);
-				}
-
-				break;
-			} else {
-				/*
-				 * Se for um não-terminal, então adicione FIRST
-				 * do símbolo à lista.
-				 */
-
-				for (int32_t k = 0; k < plist_len(gramatica->variaveis[simbolo->id.variavel].first); k++) {
-					if (_plist_find(gramatica->variaveis[producao->origem].first, &gramatica->variaveis[simbolo->id.variavel].first[k], token_cmp) == -1) {
-						plist_append(gramatica->variaveis[producao->origem].first, gramatica->variaveis[simbolo->id.variavel].first[k]);
+					if (_plist_find(gramatica->variaveis[producao->origem].first, &simbolo->id.token, token_cmp) == -1) {
+						plist_append(gramatica->variaveis[producao->origem].first, simbolo->id.token);
+						alteracao = true;
 					}
-				}
 
-				// Se este símbolo não gerar vazio, então interrompemos.
-				if (!gramatica->variaveis[simbolo->id.variavel].gera_vazio) {
 					break;
+				} else {
+					/*
+					* Se for um não-terminal, então adicione FIRST
+					* do símbolo à lista.
+					*/
+
+					for (int32_t k = 0; k < plist_len(gramatica->variaveis[simbolo->id.variavel].first); k++) {
+						if (_plist_find(gramatica->variaveis[producao->origem].first, &gramatica->variaveis[simbolo->id.variavel].first[k], token_cmp) == -1) {
+							plist_append(gramatica->variaveis[producao->origem].first, gramatica->variaveis[simbolo->id.variavel].first[k]);
+							alteracao = true;
+						}
+					}
+
+					// Se este símbolo não gerar vazio, então interrompemos.
+					if (!gramatica->variaveis[simbolo->id.variavel].gera_vazio) {
+						break;
+					}
 				}
 			}
 		}
-	}
+	} while (alteracao);
 }
 
 static void calcular_follow(pcc_ll1_t *gramatica) {
@@ -218,7 +224,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
 						LOG_PCC_ERRO(1, NULL,
 							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
-							simbolo_j->id.token.str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+							token_tipo_subtipo_str(simbolo_j->id.token.tipo, simbolo_j->id.token.subtipo), gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
 						);
 					}
 				} else {
@@ -239,7 +245,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 						if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
 							LOG_PCC_ERRO(1, NULL,
 								"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
-								terminal->str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+								token_tipo_subtipo_str(terminal->tipo, terminal->subtipo), gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
 							);
 						}
 					} else {
@@ -268,7 +274,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
 						LOG_PCC_ERRO(1, NULL,
 							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
-							terminal->str, gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+							token_tipo_subtipo_str(terminal->tipo, terminal->subtipo), gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
 						);
 					}
 				} else {
@@ -345,10 +351,8 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 	lexico_init();
 
 	while (fscanf(in, "%s", str) != EOF) {
-		printf("%s\n", str);
 
 		if (estado == 0) {
-			printf("Produção nova: %s | ", str);
 			indice = pdict_get_value(variaveis, str);
 			if (indice == NULL) {
 				uint16_t *variavel_indice = malloc(sizeof *variavel_indice);
@@ -359,14 +363,12 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 				variaveis_qtd++;
 			}
 			producao_atual.origem = *indice;
-			printf("Indice: %d\n", producao_atual.origem);
 		} else if (estado > 1) {
 			pcc_simbolo_t simbolo;
 			pcc_simbolo_id_terminal_t token_id;
 			if (token_str_tipo_subtipo(str, &token_id.tipo, &token_id.subtipo)) {
 				simbolo.tipo = SIMBOLO_TERMINAL;
 				simbolo.id.token = token_id;
-				printf("Símbolo %s é token %d %d\n", str, simbolo.id.token.tipo, simbolo.id.token.subtipo);
 			} else {
 				simbolo.tipo = SIMBOLO_VARIAVEL;
 				indice = pdict_get_value(variaveis, str);
@@ -380,7 +382,6 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 					variaveis_qtd++;
 				}
 				simbolo.id.variavel = *indice;
-				printf("Símbolo %s é var %d\n", str, simbolo.id.variavel);
 			}
 
 			plist_append(producao_atual.simbolos, simbolo);
@@ -392,14 +393,22 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 
 			estado = 0;
 			producao_atual.simbolos = NULL;
-			putchar('\n');
 		}
 	}
 	fclose(in);
 
-	pcc_ll1_init(&gramatica, variaveis_qtd);
+	pcc_ll1_init(gramatica, variaveis_qtd);
 
-	/// TODO: printar a gramática.
+	for (size_t i = 0; i < plist_len(producoes); i++) {
+		pcc_ll1_add_producao(gramatica, producoes[i]);
+	}
+
+	pcc_ll1_calcular(gramatica);
+
+	int32_t keys_len;
+	char ** variaveis_str = pdict_get_keys(variaveis, &keys_len, true);
+
+	pcc_ll1_print(gramatica, variaveis_str);
 }
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
@@ -482,12 +491,11 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	printf("Reconhecido\n");
 }
 
-void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_t variavel_str_tam) {
-	#define VSTR(i) (_variaveis_str + (i) * variavel_str_tam)
+void pcc_ll1_print(const pcc_ll1_t *gramatica, const char * const *variaveis_str) {
 	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
-		printf("%2d: " COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) " ->", producao->id, VSTR(producao->origem));
+		printf("%2d: " COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) " ->", producao->id, variaveis_str[producao->origem]);
 
 		if (plist_len(producao->simbolos) == 0) {
 			printf(" " COR(";40") COR_NEGRITO(_AZUL) "Ɛ" COR(_RESET));
@@ -496,9 +504,9 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 				const pcc_simbolo_t *simbolo = producao->simbolos + j;
 
 				if (simbolo->tipo == SIMBOLO_TERMINAL) {
-					printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s", simbolo->id.token.str);
+					printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s", token_tipo_subtipo_str(simbolo->id.token.tipo, simbolo->id.token.subtipo));
 				} else {
-					printf(" " COR(";40") COR_NEGRITO(_VERDE) "%s", VSTR(simbolo->id.variavel));
+					printf(" " COR(";40") COR_NEGRITO(_VERDE) "%s", variaveis_str[simbolo->id.variavel]);
 				}
 				printf(COR(_RESET));
 			}
@@ -510,7 +518,7 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 	for (size_t i = 0; i < plist_len(gramatica->variaveis); i++) {
 		const pcc_variavel_t *variavel = gramatica->variaveis + i;
 
-		printf(COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) ":\n", VSTR(variavel->cod));
+		printf(COR(";40") COR_NEGRITO(_VERDE) "%s" COR(_RESET) ":\n", variaveis_str[variavel->cod]);
 
 		printf("\tVazio: %s\n", variavel->gera_vazio ? "sim" : "não");
 
@@ -518,14 +526,14 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 		for (size_t j = 0; j < plist_len(variavel->first); j++) {
 			const pcc_simbolo_id_terminal_t *terminal = variavel->first + j;
 
-			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), terminal->str);
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), token_tipo_subtipo_str(terminal->tipo, terminal->subtipo));
 		}
 
 		printf(COR(_RESET) "\n\tFOLLOW:");
 		for (size_t j = 0; j < plist_len(variavel->follow); j++) {
 			const pcc_simbolo_id_terminal_t *terminal = variavel->follow + j;
 
-			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), terminal->str);
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), token_tipo_subtipo_str(terminal->tipo, terminal->subtipo));
 		}
 
 		printf(COR(_RESET) "\n\tM:");
@@ -534,7 +542,7 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char *_variaveis_str, size_
 
 			printf(COR(_RESET) "\n\t\t%2d: ", M->producao_id);
 
-			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), M->token.str);
+			printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s" COR(_RESET), token_tipo_subtipo_str(M->token.tipo, M->token.subtipo));
 		}
 
 		puts(COR(_RESET));
