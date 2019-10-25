@@ -349,8 +349,6 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 	const int16_t *indice;
 	int estado = 0;
 
-	lexico_init();
-
 	while (fscanf(in, "%s", str) != EOF) {
 
 		if (estado == 0) {
@@ -486,8 +484,34 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	}
 
 	/// TODO: remover todo mundo da pilha que gera vazio.
+	if (i < lista_tokens_qtd) {
+		LOG_PCC_ERRO(1, NULL, "Há tokens %zu não reconhecidos.\n", lista_tokens_qtd - i);
+	}
 
 	/// TODO: checar se a pilha ficou vazia ou ainda sobraram tokenss.
+	while (plist_len(pilha) > 0) {
+		const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
+
+		if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
+			LOG_PCC_ERRO(1, NULL, "Há terminais na pilha.\n");
+		}
+
+		if (gramatica->variaveis[pilha_topo->id.variavel].gera_vazio) {
+			pilha_remover(&pilha);
+		} else {
+			LOG_PCC_ERRO(0, NULL, "Sobraram %zu elementos na pilha.\n", plist_len(pilha));
+			for (int32_t i = plist_len(pilha) - 1; i >= 0; i--) {
+				if (pilha[i].tipo == SIMBOLO_TERMINAL) {
+					printf(" " COR(";40") COR_NEGRITO(_AZUL) "%s", token_tipo_subtipo_str(pilha[i].id.token.tipo, pilha[i].id.token.subtipo));
+				} else {
+					printf(" " COR(";40") COR_NEGRITO(_VERDE) "%d", pilha[i].id.variavel);
+				}
+				printf(COR(_RESET));
+			}
+			printf(COR(_RESET) "\n");
+			exit(1);
+		}
+	}
 
 	printf("Reconhecido\n");
 }

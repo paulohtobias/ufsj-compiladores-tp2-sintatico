@@ -71,8 +71,7 @@ int lexico_parse(const char *nome_arquivo) {
 	size_t comprimento;
 	char *codigo_fonte = file_to_str(nome_arquivo, &comprimento);
 	if (codigo_fonte == NULL) {
-		LOG_PCC_ERRO(0, "", "Não foi possível abrir o arquivo '%s': ", nome_arquivo);
-		return 1;
+		LOG_PCC_ERRO(1, "", "Não foi possível abrir o arquivo '%s': ", nome_arquivo);
 	}
 
 	char *src = codigo_fonte;
