@@ -587,3 +587,29 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str) {
 	}
 	#undef VSTR
 }
+
+void pcc_ll1_gramatica_cabecalho() {
+	puts(
+		"# Paulo C Compiler - Grammar\n"
+		"#\n"
+		"# Comentários são feitos usando o símbolo '#'. Tudo após ele em uma linha será ignorado.\n"
+		"# Linhas vazias também serão ignoradas.\n"
+		"#\n"
+		"# Uma produção é definida por nao_terminal := [lista_de_simbolos...]\n"
+		"# Qualquer símbolo que não consta na lista de tokens (também chamados de terminais)\n"
+		"# a seguir será considerado um não-terminal (também chamado de variável).\n"
+		"# A lista foi gerada automaticamente e serve apenas como consulta. Qualquer\n"
+		"# alteração não afetará o resultado do código.\n"
+		"#\n"
+		"#\n"
+		"# Lista de tokens e seus respectivos valores:"
+	);
+
+	for (size_t i = 0; i < TK_COUNT; i++) {
+		for (size_t j = 0; j < plist_len(__token_str[i]); j++) {
+			const char *str = token_tipo_subtipo_str(i, j);
+			printf("# %d, %2d: %s\n", (int) i, (int) j, str);
+		}
+		puts("#");
+	}
+}

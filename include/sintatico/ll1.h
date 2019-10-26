@@ -91,4 +91,6 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str);
 
+void pcc_ll1_gramatica_cabecalho();
+
 #endif // LL1_H
