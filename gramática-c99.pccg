@@ -1,4 +1,4 @@
-# Paulo C Compiler - gramática simplificada
+# Paulo C Compiler - Gramática baseada na especificação ISO/IEC 9899:1999
 #
 # Comentários são feitos usando o símbolo '#'. Tudo após ele em uma linha será ignorado.
 # Linhas vazias também serão ignoradas.
@@ -104,63 +104,26 @@
 # 4,  8: ;
 
 
-# Escopo global
-INICIO := FUNCAO-D INICIO'
-INICIO' := FUNCAO-D INICIO'
-INICIO' :=
+# External definitions
+translation-unit := external-declaration translation-unit'
+translation-unit' := external-declaration translation-unit'
+translation-unit' :=
 
-# Função: Protótipo e Definição
-FUNCAO-D := TIPO identificador ( PARAM-F-LIST ) FUNCAO-D'
-FUNCAO-D' := FUNCAO-PRO
-FUNCAO-D' := FUNCAO-DEF
+external-declaration := type-specifier identificador external-declaration'
+external-declaration' := function-definition
+external-declaration' := declaration
 
-# Tipo
-TIPO := void
-TIPO := char
-TIPO := short
-TIPO := int
-TIPO := long
-TIPO := float
-TIPO := double
-TIPO := signed
-TIPO := unsigned
-TIPO := struct identificador
-TIPO := identificador
+function-definition := (
+declaration := , identificador declaration
+declaration :=
 
-# Função: Protótipo
-FUNCAO-PRO := ;
-
-# Função: Definição
-FUNCAO-DEF := { STMT-LIST }
-
-# Statements
-STMT-LIST := STMT STMT'
-STMT-LIST :=
-
-STMT := STMT-COMPOSTO 	# TALVEZ REMOVER
-STMT := STMT-EXPR
-STMT := STMT-COND
-STMT := STMT-LAÇO
-STMT := STMT-PULO
-
-# Statement composto (talvez seja recursão à esquerda)
-STMT-COMPOSTO := { STMT-LIST }
-
-# TODO: Expressões (termina em ;)
-STMT-EXPR := ;
-
-# Condicional
-STMT-COND := if ( EXPR ) STMT-COMPOSTO STMT-COND'
-STMT-COND' := else STMT-COMPOSTO
-STMT-COND' :=
-
-# Laço
-STMT-LAÇO := while ( EXPR ) STMT
-
-# Pulo incondicional
-STMT-PULO := STMT-PULO' ;
-STMT-PULO' := continue
-STMT-PULO' := break
-STMT-PULO' := return STMT-PULO-RETURN
-STMT-PULO-RETURN := EXPR
-STMT-PULO-RETURN :=
+type-specifier := void
+type-specifier := char
+type-specifier := short
+type-specifier := int
+type-specifier := long
+type-specifier := float
+type-specifier := double
+type-specifier := signed
+type-specifier := unsigned
+type-specifier := identificador

@@ -12,19 +12,22 @@
 #include "lexico/lexico.h"
 #include "sintatico/gramatica.h"
 
-pcc_ll1_t gramatica;
+pcc_ll1_t gramatica_lexico;
 
 void pcc_gramatica_init() {
 	// TODO
 	lexico_init();
+
+	pcc_ll1_de_arquivo(&gramatica_lexico, PCC_GRAMATICA_ARQUIVO);
+}
+
+void pcc_gramatica_finalizar() {
+	/// TODO:
+	lexico_finalizar();
 }
 
 void pcc_gramatica_teste(const char *nome_arquivo) {
-	pcc_ll1_de_arquivo(&gramatica, "gramatica.pccg");
-
 	lexico_parse(nome_arquivo);
 
-	pcc_ll1_reconhecer(&gramatica, lista_tokens);
-
-	lexico_finalizar();
+	pcc_ll1_reconhecer(&gramatica_lexico, lista_tokens);
 }
