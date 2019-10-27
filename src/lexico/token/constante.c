@@ -318,7 +318,7 @@ static void char_adicionar(const void *contexto) {
 	if (*lexema != '\'') {
 		LOG_WARNING(
 			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-			token.contexto.linha_src, token.contexto.linha_comprimento,
+			token.contexto.linha_src, token.contexto.lexema_comprimento,
 			"char com mais de um caractere"
 		)
 	}
@@ -359,7 +359,7 @@ static void int_adicionar(const void *contexto) {
 		if (!sufixo_valido) {
 			LOG_ERRO(
 				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.linha_src, token.contexto.linha_comprimento,
+				token.contexto.linha_src, token.contexto.lexema_comprimento,
 				"sufixo \"%s\" inválido em constante inteiro", fim
 			);
 			token_liberar(&token);
@@ -371,7 +371,7 @@ static void int_adicionar(const void *contexto) {
 	if (valor == UINTMAX_MAX && errno == ERANGE) {
 		LOG_WARNING(
 			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-			token.contexto.linha_src, token.contexto.linha_comprimento,
+			token.contexto.linha_src, token.contexto.lexema_comprimento,
 			"constante inteira é grande demais"
 		);
 	}
@@ -420,7 +420,7 @@ static void double_adicionar(const void *contexto) {
 		if (!sufixo_valido || (f && l)) {
 			LOG_ERRO(
 				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.linha_src, token.contexto.linha_comprimento,
+				token.contexto.linha_src, token.contexto.lexema_comprimento,
 				"sufixo \"%s\" inválido em constante de ponto flutuante", fim
 			);
 			token_liberar(&token);
@@ -433,13 +433,13 @@ static void double_adicionar(const void *contexto) {
 		if (valor == 0) {
 			LOG_WARNING(
 				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.linha_src, token.contexto.linha_comprimento,
+				token.contexto.linha_src, token.contexto.lexema_comprimento,
 				"constante de ponto flutuante truncada para 0"
 			);
 		} else {
 			LOG_WARNING(
 				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.linha_src, token.contexto.linha_comprimento,
+				token.contexto.linha_src, token.contexto.lexema_comprimento,
 				"constante de ponto flutuante excede o alcance de '%s'", subtipo_str(token.subtipo)
 			);
 		}
@@ -491,7 +491,7 @@ static void incompleto(char simbolo, const void *_contexto) {
 
 	LOG_ERRO(
 		contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
-		contexto->linha_src, contexto->linha_comprimento,
+		contexto->linha_src, contexto->lexema_comprimento,
 		"caractere %c final ausente", simbolo
 	);
 }
@@ -547,7 +547,7 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 	if (base == -1) {
 		LOG_WARNING(
 			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
-			token->contexto.linha_src, token->contexto.linha_comprimento,
+			token->contexto.linha_src, token->contexto.lexema_comprimento,
 			"sequência de escape desconhecida: '\\%c'", **src
 		);
 		return **src;
@@ -559,7 +559,7 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 	if (c > UCHAR_MAX) {
 		LOG_WARNING(
 			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
-			token->contexto.linha_src, token->contexto.linha_comprimento,
+			token->contexto.linha_src, token->contexto.lexema_comprimento,
 			"sequência de escape %s fora de alcance", base == 8 ? "octal": "hexadecimal"
 		);
 	}

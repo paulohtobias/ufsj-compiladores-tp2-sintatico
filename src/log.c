@@ -12,25 +12,30 @@
 uint32_t _log_warnings = 0;
 uint32_t _log_erros = 0;
 
-void log_print_linha(const char *src, size_t comprimento, const char *cor_tipo, int32_t coluna) {
-	// TODO
-	putchar('\n');
+void log_print_linha(const char *linha_src, size_t token_comprimento, const char *cor_tipo, int32_t coluna) {
+	coluna--;
 
-	size_t i = 0;
-	while (src[i] != '\0' && src[i] != '\n') {
-		if (i == coluna - 1) {
+	size_t i, j;
+	putchar('\n');
+	for (i = 0; linha_src[i] != '\0' && linha_src[i] != '\n'; i++) {
+		if (i == coluna) {
 			printf("%s", cor_tipo);
 		}
-		putchar(src[i]);
-		if (i == coluna - 1) {
+		putchar(linha_src[i]);
+		if (i == coluna + token_comprimento) {
 			printf(COR(_RESET));
 		}
-		i++;
-	}
-	while (i < comprimento) {
-		putchar(src[i]);
-		i++;
 	}
 
-	puts("\n");
+	// Marcador
+	putchar('\n');
+	for (j = 0; j < coluna; j++) {
+		char s = linha_src[j] == '\t' ? '\t' : ' ';
+		putchar(s);
+	}
+	printf("%s^", cor_tipo);
+	for (j = 1; j < token_comprimento && linha_src[j] != '\n'; j++) {
+		putchar('~');
+	}
+	puts(COR(_RESET));
 }

@@ -108,5 +108,9 @@ static void comentario_adicionar(const void *contexto) {
 static void comentario_incompleto(const void *_contexto) {
 	const token_contexto_t *contexto = _contexto;
 
-	LOG_ERRO(contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna, contexto->linha_src, contexto->linha_comprimento, "comentário incompleto.");
+	LOG_ERRO(
+		contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
+		contexto->linha_src, contexto->lexema_comprimento,
+		"comentário incompleto."
+	);
 }
