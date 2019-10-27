@@ -567,6 +567,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 }
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str) {
+	puts("Produções");
 	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
 		const pcc_producao_t *producao = gramatica->producoes + i;
 
@@ -590,6 +591,7 @@ void pcc_ll1_print(const pcc_ll1_t *gramatica, const char **variaveis_str) {
 		printf(COR(_RESET) "\n");
 	}
 
+	puts("\nVariáveis");
 	for (size_t i = 0; i < plist_len(gramatica->variaveis); i++) {
 		const pcc_variavel_t *variavel = gramatica->variaveis + i;
 
