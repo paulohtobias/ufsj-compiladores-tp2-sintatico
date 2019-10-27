@@ -129,7 +129,7 @@ token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *_contexto) {
 }
 
 void token_liberar(token_t *token) {
-	free(token->contexto.arquivo);
+	//free(token->contexto.arquivo);
 	free(token->contexto.linha_src);
 	free(token->valor.dados);
 }

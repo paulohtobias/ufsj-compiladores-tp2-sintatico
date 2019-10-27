@@ -9,8 +9,9 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "lexico/lexico.h"
 #include "utils.h"
+#include "lexico/codigo_fonte.h"
+#include "lexico/lexico.h"
 
 afd_t *afd_lexico = NULL;
 int lexico_init() {
@@ -39,7 +40,7 @@ void lexico_finalizar() {
 }
 
 /// Avança no código fonte. Retorna true se houve um '\n'
-static bool avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
+static bool avancar_cursor(pcc_codigo_fonte_t *fonte, char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
 	bool nl = false;
 
 	if (comprimento <= 0) {
@@ -79,12 +80,9 @@ static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna, token_c
 int lexico_parse(const char *nome_arquivo) {
 	// Carregando o arquivo para a memória. TODO: usar mmap
 	size_t comprimento;
-	char *codigo_fonte = file_to_str(nome_arquivo, &comprimento);
-	if (codigo_fonte == NULL) {
-		LOG_PCC_ERRO(1, "", "Não foi possível abrir o arquivo '%s': ", nome_arquivo);
-	}
+	pcc_codigo_fonte *codigo_fonte = pcc_codigo_fonte_abir(nome_arquivo);
 
-	char *src = codigo_fonte;
+	char *src = codigo_fonte->src;
 
 	// Variáveis de contexto.
 	int32_t linha = 1;
