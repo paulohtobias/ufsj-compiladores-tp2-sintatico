@@ -49,17 +49,17 @@ int token_palavra_chave_buscar(const token_t *token) {
 		index = novo_index;
 
 		int i;
-		for (i = 0; token->contexto.lexema[i] != '\0' && __palavras_chave[index][i] != '\0'; i++) {
-			if (token->contexto.lexema[i] < __palavras_chave[index][i]) {
+		for (i = 0; token->contexto._lexema[i] != '\0' && __palavras_chave[index][i] != '\0'; i++) {
+			if (token->contexto._lexema[i] < __palavras_chave[index][i]) {
 				fim = index;
 				break;
-			} else if (token->contexto.lexema[i] > __palavras_chave[index][i]) {
+			} else if (token->contexto._lexema[i] > __palavras_chave[index][i]) {
 				inicio = index;
 				break;
 			}
 		}
 
-		if (token->contexto.lexema[i] == '\0' && __palavras_chave[index][i] == '\0') {
+		if (token->contexto._lexema[i] == '\0' && __palavras_chave[index][i] == '\0') {
 			return index;
 		}
 	}

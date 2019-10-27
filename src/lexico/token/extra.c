@@ -29,7 +29,7 @@ const char __extras_lexemas[][32] = {
 #undef TK_EXT_SUBTIPO
 
 /// Função adicionar
-static void extra_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void extra_adicionar(const void *contexto);
 
 /// Função to_str
 const char *extra_str(uint32_t subtipo);
@@ -75,32 +75,38 @@ fim:
 	return res;
 }
 
-static void extra_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
+static void extra_adicionar(const void *_contexto) {
+	const token_contexto_t *contexto = _contexto;
+
 	// subtipo é o índice do lexema na tabela.
 	int subtipo;
 	for (subtipo = 0; subtipo < __extras_quantidade; subtipo++) {
 		size_t i;
-		for (i = 0; __extras_lexemas[subtipo][i] != '\0' && i < comprimento; i++) {
-			if (__extras_lexemas[subtipo][i] != lexema[i]) {
+		for (i = 0; __extras_lexemas[subtipo][i] != '\0' && i < contexto->lexema_comprimento; i++) {
+			if (__extras_lexemas[subtipo][i] != contexto->_lexema[i]) {
 				break;
 			}
 		}
 
 		// Houve casamento.
-		if (__extras_lexemas[subtipo][i] == '\0' && i == comprimento) {
+		if (__extras_lexemas[subtipo][i] == '\0' && i == contexto->lexema_comprimento) {
 			break;
 		}
 	}
 
 	// Deve ser sempre verdadeiro.
 	if (subtipo < __extras_quantidade) {
-		token_t token = token_criar(TK_EXT, subtipo, arquivo, lexema, comprimento, linha, coluna);
+		token_t token = token_criar(TK_EXT, subtipo, contexto);
 		token.subtipo_to_str = extra_str;
 
 		token_adicionar(&token);
 
 	} else {
-		LOG_PCC_ERRO(0, NULL, "%s: extra \"%.*s\" não reconhecido\n", __FUNCTION__, (int) comprimento, lexema);
+		LOG_PCC_ERRO(
+			0, NULL,
+			"%s: extra \"%.*s\" não reconhecido\n",
+			__FUNCTION__, (int) contexto->lexema_comprimento, contexto->_lexema
+		);
 	}
 }
 

@@ -463,7 +463,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				LOG_ERRO(
 					lista_tokens[i].contexto.arquivo,
 					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
-					lista_tokens[i].contexto.lexema, lista_tokens[i].contexto.comprimento,
+					lista_tokens[i].contexto.linha_src, lista_tokens[i].contexto.linha_comprimento,
 					"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
 					token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
 					token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
@@ -503,7 +503,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				LOG_ERRO(
 					lista_tokens[i].contexto.arquivo,
 					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
-					lista_tokens[i].contexto.lexema, lista_tokens[i].contexto.comprimento,
+					lista_tokens[i].contexto.linha_src, lista_tokens[i].contexto.linha_comprimento,
 					"%s", err_msg
 				);
 				erro = true;

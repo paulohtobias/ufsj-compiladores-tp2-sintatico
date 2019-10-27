@@ -24,7 +24,7 @@ size_t __preprocessadores_quantidade = ARR_TAMANHO(__preprocessadores);
 
 
 /// Função adicionar
-static void preprocessador_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void preprocessador_adicionar(const void *contexto);
 
 /// Função subtipo_str.
 const char *preprocessador_str(uint32_t subtipo);
@@ -111,10 +111,11 @@ fim:
 	return res;
 }
 
-static void preprocessador_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
+static void preprocessador_adicionar(const void *_contexto) {
+	const token_contexto_t *contexto = _contexto;
 	// Pulando a # e possíveis espaços antes do nome da diretiva.
 	int32_t lexema_offset = 1;
-	while (isspace((unsigned char) lexema[lexema_offset])) {
+	while (isspace((unsigned char) contexto->_lexema[lexema_offset])) {
 		lexema_offset++;
 	}
 
@@ -122,20 +123,20 @@ static void preprocessador_adicionar(const char *arquivo, const char *lexema, si
 	int subtipo;
 	for (subtipo = 0; subtipo < __preprocessadores_quantidade; subtipo++) {
 		size_t i;
-		for (i = 0; __preprocessadores[subtipo][i] != '\0' && islower((unsigned char) lexema[i + lexema_offset]); i++) {
-			if (__preprocessadores[subtipo][i] != lexema[i + lexema_offset]) {
+		for (i = 0; __preprocessadores[subtipo][i] != '\0' && islower((unsigned char) contexto->_lexema[i + lexema_offset]); i++) {
+			if (__preprocessadores[subtipo][i] != contexto->_lexema[i + lexema_offset]) {
 				break;
 			}
 		}
 
 		// Houve casamento.
-		if (__preprocessadores[subtipo][i] == '\0' && !islower((unsigned char) lexema[i + lexema_offset])) {
+		if (__preprocessadores[subtipo][i] == '\0' && !islower((unsigned char) contexto->_lexema[i + lexema_offset])) {
 			break;
 		}
 	}
 
 	if (subtipo < __preprocessadores_quantidade) {
-		token_t token = token_criar(TK_PP, subtipo, arquivo, lexema, comprimento, linha, coluna);
+		token_t token = token_criar(TK_PP, subtipo, contexto);
 		token.subtipo_to_str = preprocessador_str;
 
 		// Copiando a # inicial.
@@ -148,14 +149,15 @@ static void preprocessador_adicionar(const char *arquivo, const char *lexema, si
 		int32_t posicao_final = lexema_offset;
 		int32_t posicao_barra = -1;
 
-		for (int32_t i = 0; i < token.contexto.comprimento; i++) {
-			if (token.contexto.lexema[i] == '\\') {
+		for (int32_t i = 0; i < token.contexto.lexema_comprimento; i++) {
+			if (token.contexto._lexema[i] == '\\') {
 				posicao_barra = i;
-			} else if (token.contexto.lexema[i] == '\n') {
+			} else if (token.contexto._lexema[i] == '\n') {
 				if (posicao_barra != -1) {
 					if (posicao_barra + 1 < i) {
 						LOG_WARNING(
-							arquivo, linha, coluna, lexema, comprimento,
+							token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+							token.contexto.linha_src, token.contexto.linha_comprimento,
 							"espaços antes da barra invertida (\\) antes da quebra de linha"
 						);
 					}
@@ -168,9 +170,9 @@ static void preprocessador_adicionar(const char *arquivo, const char *lexema, si
 				int32_t offset = token.valor.tamanho;
 				token.valor.tamanho += posicao_final - posicao_inicial;
 				PREALLOC(token.valor.dados, token.valor.tamanho + 1);
-				strncpy(((char *) token.valor.dados) + offset, token.contexto.lexema + posicao_inicial, posicao_final - posicao_inicial);
+				strncpy(((char *) token.valor.dados) + offset, token.contexto._lexema + posicao_inicial, posicao_final - posicao_inicial);
 				posicao_inicial = i + 1;
-			} else if (!isspace((unsigned char) token.contexto.lexema[i]) && posicao_barra != -1) {
+			} else if (!isspace((unsigned char) token.contexto._lexema[i]) && posicao_barra != -1) {
 				posicao_barra = -1;
 			}
 		}
@@ -180,7 +182,8 @@ static void preprocessador_adicionar(const char *arquivo, const char *lexema, si
 		token_adicionar(&token);
 	} else {
 		LOG_ERRO(
-			arquivo, linha, coluna, lexema, comprimento,
+			contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
+			contexto->linha_src, contexto->linha_comprimento,
 			"diretiva de pré-processamento inválida"
 		);
 	}

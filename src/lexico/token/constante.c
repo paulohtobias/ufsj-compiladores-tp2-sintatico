@@ -32,10 +32,10 @@ TK_CNST_SUBTIPOS
 static int number_init(afd_t *afd);
 
 /// Funções adicionar.
-static void str_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
-static void char_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
-static void int_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
-static void double_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void str_adicionar(const void *contexto);
+static void char_adicionar(const void *contexto);
+static void int_adicionar(const void *contexto);
+static void double_adicionar(const void *contexto);
 
 /// Funções to_str
 static char *str_to_str(const void *dados, size_t comprimento);
@@ -44,8 +44,8 @@ static char *int_to_str(const void *dados, size_t comprimento);
 static char *double_to_str(const void *dados, size_t comprimento);
 
 /// Funções de erro.
-static void str_incompleta(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
-static void char_incompleto(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void str_incompleta(const void *contexto);
+static void char_incompleto(const void *contexto);
 
 /// Outras funções.
 static const char *subtipo_str(uint32_t subtipo);
@@ -268,16 +268,16 @@ static int number_init(afd_t *afd) {
 }
 
 /// adicionar
-static void str_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	token_t token = token_criar(TK_CNST, TK_CNST_STR, arquivo, lexema, comprimento, linha, coluna);
+static void str_adicionar(const void *contexto) {
+	token_t token = token_criar(TK_CNST, TK_CNST_STR, contexto);
 	token.subtipo_to_str = subtipo_str;
 
-	token.valor.tamanho = comprimento -1;
+	token.valor.tamanho = token.contexto.lexema_comprimento - 1;
 	PMALLOC(token.valor.dados, token.valor.tamanho);
 	token.valor.to_str = str_to_str;
 
 	// Ignorando as aspas iniciais.
-	lexema++;
+	const char *lexema = token.contexto._lexema + 1;
 	size_t i;
 	for (i = 0; *lexema != '\"'; i++) {
 		if (*lexema == '\\') {
@@ -297,8 +297,8 @@ static void str_adicionar(const char *arquivo, const char *lexema, size_t compri
 
 	token_adicionar(&token);
 }
-static void char_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	token_t token = token_criar(TK_CNST, TK_CNST_CHAR, arquivo, lexema, comprimento, linha, coluna);
+static void char_adicionar(const void *contexto) {
+	token_t token = token_criar(TK_CNST, TK_CNST_CHAR, contexto);
 	token.subtipo_to_str = subtipo_str;
 
 	token.valor.tamanho = 1; // sizeof(char) é sempre 1.
@@ -306,7 +306,7 @@ static void char_adicionar(const char *arquivo, const char *lexema, size_t compr
 	token.valor.to_str = char_to_str;
 
 	// Ignorando as aspas iniciais.
-	lexema++;
+	const char *lexema = token.contexto._lexema + 1;
 	if (*lexema == '\\') {
 		*((char *) token.valor.dados) = parse_escape_sequence(&token, &lexema);
 	} else {
@@ -316,18 +316,22 @@ static void char_adicionar(const char *arquivo, const char *lexema, size_t compr
 
 	// Checa se não existem mais caracteres.
 	if (*lexema != '\'') {
-		LOG_WARNING(arquivo, linha, coluna, token.contexto.lexema, comprimento, "char com mais de um caractere")
+		LOG_WARNING(
+			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+			token.contexto.linha_src, token.contexto.linha_comprimento,
+			"char com mais de um caractere"
+		)
 	}
 
 	token_adicionar(&token);
 }
-static void int_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	token_t token = token_criar(TK_CNST, TK_CNST_INT, arquivo, lexema, comprimento, linha, coluna);
+static void int_adicionar(const void *contexto) {
+	token_t token = token_criar(TK_CNST, TK_CNST_INT, contexto);
 	token.subtipo_to_str = subtipo_str;
 
 	// Convertendo o lexema para inteiro.
 	char *fim = NULL;
-	uintmax_t valor = strtoumax(token.contexto.lexema, &fim, 0);
+	uintmax_t valor = strtoumax(token.contexto._lexema, &fim, 0);
 	size_t tamanho = sizeof valor;
 
 	// Verificando se o sufixo é válido.
@@ -353,7 +357,11 @@ static void int_adicionar(const char *arquivo, const char *lexema, size_t compri
 		}
 
 		if (!sufixo_valido) {
-			LOG_ERRO(arquivo, linha, coluna, lexema, comprimento, "sufixo \"%s\" inválido em constante inteiro", fim);
+			LOG_ERRO(
+				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+				token.contexto.linha_src, token.contexto.linha_comprimento,
+				"sufixo \"%s\" inválido em constante inteiro", fim
+			);
 			token_liberar(&token);
 			return;
 		}
@@ -361,7 +369,11 @@ static void int_adicionar(const char *arquivo, const char *lexema, size_t compri
 
 	// Verificando se houve overflow.
 	if (valor == UINTMAX_MAX && errno == ERANGE) {
-		LOG_WARNING(arquivo, linha, coluna, lexema, comprimento, "constante inteira é grande demais");
+		LOG_WARNING(
+			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+			token.contexto.linha_src, token.contexto.linha_comprimento,
+			"constante inteira é grande demais"
+		);
 	}
 
 	// TODO: verificar se cabe em um int para reduzir tamanho.
@@ -373,14 +385,14 @@ static void int_adicionar(const char *arquivo, const char *lexema, size_t compri
 
 	token_adicionar(&token);
 }
-static void double_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	token_t token = token_criar(TK_CNST, TK_CNST_DBL, arquivo, lexema, comprimento, linha, coluna);
+static void double_adicionar(const void *contexto) {
+	token_t token = token_criar(TK_CNST, TK_CNST_DBL, contexto);
 	token.subtipo_to_str = subtipo_str;
 
 	// Convertendo o lexema para double.
 	errno = 0;
 	char *fim = NULL;
-	long double valor = strtold(token.contexto.lexema, &fim);
+	long double valor = strtold(token.contexto._lexema, &fim);
 	size_t tamanho = sizeof valor;
 
 	// Verificando se o sufixo é válido.
@@ -406,7 +418,11 @@ static void double_adicionar(const char *arquivo, const char *lexema, size_t com
 		}
 
 		if (!sufixo_valido || (f && l)) {
-			LOG_ERRO(arquivo, linha, coluna, lexema, comprimento, "sufixo \"%s\" inválido em constante de ponto flutuante", fim);
+			LOG_ERRO(
+				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+				token.contexto.linha_src, token.contexto.linha_comprimento,
+				"sufixo \"%s\" inválido em constante de ponto flutuante", fim
+			);
 			token_liberar(&token);
 			return;
 		}
@@ -415,9 +431,17 @@ static void double_adicionar(const char *arquivo, const char *lexema, size_t com
 	// Verificando se houve overflow.
 	if (errno == ERANGE) {
 		if (valor == 0) {
-			LOG_WARNING(arquivo, linha, coluna, lexema, comprimento, "constante de ponto flutuante truncada para 0");
+			LOG_WARNING(
+				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+				token.contexto.linha_src, token.contexto.linha_comprimento,
+				"constante de ponto flutuante truncada para 0"
+			);
 		} else {
-			LOG_WARNING(arquivo, linha, coluna, lexema, comprimento, "constante de ponto flutuante excede o alcance de '%s'", subtipo_str(token.subtipo));
+			LOG_WARNING(
+				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
+				token.contexto.linha_src, token.contexto.linha_comprimento,
+				"constante de ponto flutuante excede o alcance de '%s'", subtipo_str(token.subtipo)
+			);
 		}
 	}
 
@@ -462,14 +486,20 @@ static char *double_to_str(const void *dados, size_t comprimento) {
 	return str;
 }
 
-static void incompleto(char simbolo, const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	LOG_ERRO(arquivo, linha, coluna, lexema, comprimento, "caractere %c final ausente", simbolo);
+static void incompleto(char simbolo, const void *_contexto) {
+	const token_contexto_t *contexto = _contexto;
+
+	LOG_ERRO(
+		contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
+		contexto->linha_src, contexto->linha_comprimento,
+		"caractere %c final ausente", simbolo
+	);
 }
-static void str_incompleta(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	incompleto('"', arquivo, lexema, comprimento, linha, coluna);
+static void str_incompleta(const void *contexto) {
+	incompleto('"', contexto);
 }
-static void char_incompleto(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	incompleto('\'', arquivo, lexema, comprimento, linha, coluna);
+static void char_incompleto(const void *contexto) {
+	incompleto('\'', contexto);
 }
 
 
@@ -516,7 +546,8 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 
 	if (base == -1) {
 		LOG_WARNING(
-			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna, token->contexto.lexema, token->contexto.comprimento,
+			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
+			token->contexto.linha_src, token->contexto.linha_comprimento,
 			"sequência de escape desconhecida: '\\%c'", **src
 		);
 		return **src;
@@ -527,7 +558,8 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 
 	if (c > UCHAR_MAX) {
 		LOG_WARNING(
-			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna, token->contexto.lexema, token->contexto.comprimento,
+			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
+			token->contexto.linha_src, token->contexto.linha_comprimento,
 			"sequência de escape %s fora de alcance", base == 8 ? "octal": "hexadecimal"
 		);
 	}

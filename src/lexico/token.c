@@ -94,26 +94,31 @@ bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo) 
 	return false;
 }
 
-token_t token_criar(uint32_t tipo, uint32_t subtipo, const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
+token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *_contexto) {
 	token_t token;
 
+	const token_contexto_t *contexto = _contexto;
 	// Tipo e sub-tipo.
 	token.tipo = tipo;
 	token.subtipo = subtipo;
 	token.subtipo_to_str = NULL;
 
 	// Arquivo.
-	token.contexto.arquivo = strdup(arquivo);
-
-	// Lexema.
-	token.contexto.comprimento = comprimento;
-	PMALLOC(token.contexto.lexema, token.contexto.comprimento + 1);
-	strncpy(token.contexto.lexema, lexema, comprimento);
-	token.contexto.lexema[comprimento] = '\0';
+	token.contexto.arquivo = strdup(contexto->arquivo);
 
 	// Posição.
-	token.contexto.posicao.linha = linha;
-	token.contexto.posicao.coluna = coluna;
+	token.contexto.posicao.linha = contexto->posicao.linha;
+	token.contexto.posicao.coluna = contexto->posicao.coluna;
+
+	// Linha.
+	token.contexto.linha_comprimento = contexto->linha_comprimento;
+	PMALLOC(token.contexto.linha_src, token.contexto.linha_comprimento + 1);
+	strncpy(token.contexto.linha_src, contexto->linha_src, token.contexto.linha_comprimento);
+	token.contexto.linha_src[token.contexto.linha_comprimento] = '\0';
+
+	// Lexema
+	token.contexto.lexema_comprimento = contexto->lexema_comprimento;
+	token.contexto._lexema = token.contexto.linha_src + token.contexto.posicao.coluna - 1; // -1 pois linha e coluna começam em 1.
 
 	// Valor.
 	token.valor.dados = NULL;
@@ -125,7 +130,7 @@ token_t token_criar(uint32_t tipo, uint32_t subtipo, const char *arquivo, const 
 
 void token_liberar(token_t *token) {
 	free(token->contexto.arquivo);
-	free(token->contexto.lexema);
+	free(token->contexto.linha_src);
 	free(token->valor.dados);
 }
 
@@ -158,7 +163,7 @@ void token_print(FILE *out, const token_t *token) {
 		subtipo,
 		token->contexto.arquivo,
 		token->contexto.posicao.linha, token->contexto.posicao.coluna,
-		token->contexto.lexema
+		token->contexto._lexema
 	);
 	if (_valor != NULL) {
 		fprintf(out, "\tValor: %s\n\n", _valor);
