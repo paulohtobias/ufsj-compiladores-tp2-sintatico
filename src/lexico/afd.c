@@ -53,7 +53,7 @@ void afd_liberar(afd_t *afd) {
 	plist_free(afd->estados);
 }
 
-afd_estado_t afd_criar_estado(afd_transicao_t *transicoes, size_t transicoes_quantidade, bool final, void (*acao)(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna)) {
+afd_estado_t afd_criar_estado(afd_transicao_t *transicoes, size_t transicoes_quantidade, bool final, void (*acao)(const void *)) {
 	afd_estado_t estado;
 
 	estado.final = final;

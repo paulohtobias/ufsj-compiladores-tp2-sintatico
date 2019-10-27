@@ -38,13 +38,16 @@ void lexico_finalizar() {
 	free(afd_lexico);
 }
 
-/// Avança no código fonte.
-static int avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
+/// Avança no código fonte. Retorna true se houve um '\n'
+static bool avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
+	bool nl = false;
+
 	if (comprimento <= 0) {
 		comprimento = utf8_simbolo_comprimento(*src);
 	}
 
 	if (**src == '\n') {
+		nl = true;
 		(*linha)++;
 		(*coluna) = 1;
 	} else {
@@ -54,15 +57,22 @@ static int avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32_
 	(*src) += comprimento;
 
 	if (contexto != NULL) {
-		contexto->comprimento += comprimento;
+		contexto->linha_comprimento += comprimento;
+		contexto->lexema_comprimento += comprimento;
 	}
 
-	return comprimento;
+	return nl;
 }
 
-static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna) {
+static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
 	while (isspace((unsigned int) **src)) {
-		avancar_cursor(src, -1, linha, coluna, NULL);
+		int8_t comprimento = utf8_simbolo_comprimento(*src);
+		if (avancar_cursor(src, comprimento, linha, coluna, NULL)) {
+			contexto->linha_src = *src;
+			contexto->linha_comprimento = 0;
+		} else {
+			contexto->linha_comprimento += comprimento;
+		}
 	}
 }
 
@@ -76,20 +86,22 @@ int lexico_parse(const char *nome_arquivo) {
 
 	char *src = codigo_fonte;
 
-	// Contadores de linha e coluna.
+	// Variáveis de contexto.
 	int32_t linha = 1;
 	int32_t coluna = 1;
+	token_contexto_t contexto;
 
 	// Ignorando espaços iniciais.
-	ignorar_espacos(&src, &linha, &coluna);
+	contexto.linha_src = src;
+	contexto.linha_comprimento = 0;
+	ignorar_espacos(&src, &linha, &coluna, &contexto);
 
-	// Variáveis de contexto.
-	token_contexto_t contexto;
+	// Inicializando o contexto.
 	contexto.arquivo = strdup(nome_arquivo);
-	contexto.lexema = src;
-	contexto.comprimento = 0;
 	contexto.posicao.linha = linha;
 	contexto.posicao.coluna = coluna;
+	contexto._lexema = contexto.linha_src + contexto.posicao.coluna - 1;
+	contexto.lexema_comprimento = 0;
 
 	// Estado inicial.
 	afd_estado_t *estado_atual = afd_lexico->estados;
@@ -114,14 +126,14 @@ int lexico_parse(const char *nome_arquivo) {
 			 * Portanto, não é necessário verificar se o estado é final.
 			 */
 			if (estado_atual->acao != NULL) {
-				estado_atual->acao(
-					contexto.arquivo,
-					contexto.lexema, contexto.comprimento,
-					contexto.posicao.linha, contexto.posicao.coluna
-				);
+				estado_atual->acao(&contexto);
 			} else {
 				if (!moveu) {
-					LOG_ERRO(contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna, contexto.lexema, contexto.comprimento, "símbolo '%.*s' inválido", simbolo_comprimento, contexto.lexema);
+					LOG_ERRO(
+						contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna,
+						contexto.linha_src, contexto.linha_comprimento,
+						"símbolo '%.*s' inválido", simbolo_comprimento, contexto._lexema
+					);
 				}
 			}
 
@@ -133,13 +145,12 @@ int lexico_parse(const char *nome_arquivo) {
 				avancar_cursor(&src, simbolo_comprimento, &linha, &coluna, &contexto);
 			}
 
-			ignorar_espacos(&src, &linha, &coluna);
-
 			// Resetando o contexto.
-			contexto.lexema = src;
-			contexto.comprimento = 0;
+			ignorar_espacos(&src, &linha, &coluna, &contexto);
 			contexto.posicao.linha = linha;
 			contexto.posicao.coluna = coluna;
+			contexto._lexema = contexto.linha_src + contexto.posicao.coluna - 1;
+			contexto.lexema_comprimento = 0;
 
 			// Estado atual volta a ser o inicial.
 			estado_atual = afd_lexico->estados;
@@ -150,11 +161,7 @@ int lexico_parse(const char *nome_arquivo) {
 
 	// Se existia alguma ação a ser executada.
 	if (estado_atual->acao != NULL) {
-		estado_atual->acao(
-			contexto.arquivo,
-			contexto.lexema, contexto.comprimento,
-			contexto.posicao.linha, contexto.posicao.coluna
-		);
+		estado_atual->acao(&contexto);
 	}
 	free(codigo_fonte);
 	free(contexto.arquivo);

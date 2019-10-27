@@ -45,8 +45,13 @@ TOKEN_CODIGOS
 
 typedef struct token_contexto_t {
 	char *arquivo;
-	char *lexema;
-	size_t comprimento;
+
+	char *linha_src;
+	size_t linha_comprimento;
+
+	/// Aponta pra linha_src + posicao.coluna
+	char * _lexema;
+	size_t lexema_comprimento;
 
 	struct {
 		int32_t linha;
@@ -121,7 +126,7 @@ bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo);
 /**
  * Função genérica para criar um novo token.
  */
-token_t token_criar(uint32_t tipo, uint32_t subtipo, const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *contexto);
 
 /**
  * Libera os dados do token que foram alocado dinâmicamente.

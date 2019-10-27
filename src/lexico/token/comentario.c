@@ -19,10 +19,10 @@
 bool salvar_comentarios = false;
 
 /// Função adicionar
-static void comentario_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void comentario_adicionar(const void *contexto);
 
 /// Função de erro.
-static void comentario_incompleto(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna);
+static void comentario_incompleto(const void *contexto);
 
 int token_comentario_init(afd_t *afd) {
 	int res = 0;
@@ -97,14 +97,16 @@ fim:
 	return res;
 }
 
-static void comentario_adicionar(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
+static void comentario_adicionar(const void *contexto) {
 	if (salvar_comentarios) {
-		token_t token = token_criar(TK_CMT, 0, arquivo, lexema, comprimento, linha, coluna);
+		token_t token = token_criar(TK_CMT, 0, contexto);
 
 		token_adicionar(&token);
 	}
 }
 
-static void comentario_incompleto(const char *arquivo, const char *lexema, size_t comprimento, int32_t linha, int32_t coluna) {
-	LOG_ERRO(arquivo, linha, coluna, lexema, comprimento, "comentário incompleto.");
+static void comentario_incompleto(const void *_contexto) {
+	const token_contexto_t *contexto = _contexto;
+
+	LOG_ERRO(contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna, contexto->linha_src, contexto->linha_comprimento, "comentário incompleto.");
 }
