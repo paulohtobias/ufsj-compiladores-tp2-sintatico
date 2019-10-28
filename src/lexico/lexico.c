@@ -9,12 +9,15 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "lexico/lexico.h"
 #include "utils.h"
+#include "lexico/codigo_fonte.h"
+#include "lexico/lexico.h"
 
 afd_t *afd_lexico = NULL;
 int lexico_init() {
 	int res = 0;
+
+	pcc_codigo_fonte_init();
 
 	PMALLOC(afd_lexico, 1);
 
@@ -57,7 +60,6 @@ static bool avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32
 	(*src) += comprimento;
 
 	if (contexto != NULL) {
-		contexto->linha_comprimento += comprimento;
 		contexto->lexema_comprimento += comprimento;
 	}
 
@@ -66,25 +68,15 @@ static bool avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32
 
 static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
 	while (isspace((unsigned int) **src)) {
-		int8_t comprimento = utf8_simbolo_comprimento(*src);
-		if (avancar_cursor(src, comprimento, linha, coluna, NULL)) {
-			contexto->linha_src = *src;
-			contexto->linha_comprimento = 0;
-		} else {
-			contexto->linha_comprimento += comprimento;
-		}
+		avancar_cursor(src, -1, linha, coluna, NULL);
 	}
 }
 
 int lexico_parse(const char *nome_arquivo) {
 	// Carregando o arquivo para a memória. TODO: usar mmap
-	size_t comprimento;
-	char *codigo_fonte = file_to_str(nome_arquivo, &comprimento);
-	if (codigo_fonte == NULL) {
-		LOG_PCC_ERRO(1, "", "Não foi possível abrir o arquivo '%s': ", nome_arquivo);
-	}
+	pcc_codigo_fonte_t *codigo_fonte = pcc_codigo_fonte_abir(nome_arquivo);
 
-	char *src = codigo_fonte;
+	char *src = codigo_fonte->src;
 
 	// Variáveis de contexto.
 	int32_t linha = 1;
@@ -92,15 +84,13 @@ int lexico_parse(const char *nome_arquivo) {
 	token_contexto_t contexto;
 
 	// Ignorando espaços iniciais.
-	contexto.linha_src = src;
-	contexto.linha_comprimento = 0;
 	ignorar_espacos(&src, &linha, &coluna, &contexto);
 
 	// Inicializando o contexto.
-	contexto.arquivo = strdup(nome_arquivo);
+	contexto.fonte = codigo_fonte;
 	contexto.posicao.linha = linha;
 	contexto.posicao.coluna = coluna;
-	contexto._lexema = contexto.linha_src + contexto.posicao.coluna - 1;
+	contexto._lexema = pcc_codigo_fonte_get_linha(contexto.fonte, contexto.posicao.linha, contexto.posicao.coluna);
 	contexto.lexema_comprimento = 0;
 
 	// Estado inicial.
@@ -129,9 +119,10 @@ int lexico_parse(const char *nome_arquivo) {
 				estado_atual->acao(&contexto);
 			} else {
 				if (!moveu) {
-					LOG_ERRO(
-						contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna,
-						contexto.linha_src, simbolo_comprimento,
+					/// TODO: apagar const char *fmt = "símbolo '%.*s' inválido";
+					/// TODO: apagar printf("fmt: %p\n&fmt: %p\n", fmt, &fmt);
+					pcc_log_erro(
+						&contexto,
 						"símbolo '%.*s' inválido", simbolo_comprimento, contexto._lexema
 					);
 				}
@@ -149,7 +140,7 @@ int lexico_parse(const char *nome_arquivo) {
 			ignorar_espacos(&src, &linha, &coluna, &contexto);
 			contexto.posicao.linha = linha;
 			contexto.posicao.coluna = coluna;
-			contexto._lexema = contexto.linha_src + contexto.posicao.coluna - 1;
+			contexto._lexema = pcc_codigo_fonte_get_linha(contexto.fonte, contexto.posicao.linha, contexto.posicao.coluna);
 			contexto.lexema_comprimento = 0;
 
 			// Estado atual volta a ser o inicial.
@@ -163,8 +154,6 @@ int lexico_parse(const char *nome_arquivo) {
 	if (estado_atual->acao != NULL) {
 		estado_atual->acao(&contexto);
 	}
-	free(codigo_fonte);
-	free(contexto.arquivo);
 
 	return 0;
 }

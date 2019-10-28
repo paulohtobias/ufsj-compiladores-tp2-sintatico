@@ -460,10 +460,8 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 			 */
 			if (token_cmp(&pilha_topo->id.token, &lista_tokens[i])) {
 				// TODO: melhorar mensagem de erro.
-				LOG_ERRO(
-					lista_tokens[i].contexto.arquivo,
-					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
-					lista_tokens[i].contexto.linha_src, lista_tokens[i].contexto.lexema_comprimento,
+				pcc_log_erro(
+					&lista_tokens[i].contexto,
 					"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
 					token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
 					token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
@@ -500,12 +498,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				sprintf(&err_msg[offset], COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo));
 
 				// TODO: melhorar mensagem de erro.
-				LOG_ERRO(
-					lista_tokens[i].contexto.arquivo,
-					lista_tokens[i].contexto.posicao.linha, lista_tokens[i].contexto.posicao.coluna,
-					lista_tokens[i].contexto.linha_src, lista_tokens[i].contexto.lexema_comprimento,
-					"%s", err_msg
-				);
+				pcc_log_erro(&lista_tokens[i].contexto, "%s", err_msg);
 				erro = true;
 			} else {
 				const pcc_producao_t *producao = &gramatica->producoes[variavel_topo->M[producao_id].producao_id];

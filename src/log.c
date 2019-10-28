@@ -7,20 +7,60 @@
  * paulohtobias@outlook.com
  */
 
+#include "lexico/token.h"
 #include "log.h"
 
+/// Contador de warnings.
 uint32_t _log_warnings = 0;
+
+/// Contador de erros.
 uint32_t _log_erros = 0;
 
-void log_print_linha(const char *linha_src, size_t token_comprimento, const char *cor_tipo, int32_t coluna) {
+void pcc_log_warning(const void *contexto, const char *fmt, ...) {
+	_log_warnings++;
+
+	va_list arg;
+	va_start(arg, fmt);
+	pcc_log_mensagem("warning", COR_NEGRITO(_AMARELO), contexto, fmt, arg);
+	va_end(arg);
+}
+
+void pcc_log_erro(const void *contexto, const char *fmt, ...) {
+	_log_erros++;
+
+	va_list arg;
+	va_start(arg, fmt);
+	pcc_log_mensagem("erro", COR_NEGRITO(_VERMELHO), contexto, fmt, arg);
+	va_end(arg);
+}
+
+void pcc_log_mensagem(const char *tipo, const char *tipo_cor, const void *_contexto, const char *fmt, va_list arg) {
+	const token_contexto_t *contexto = _contexto;
+	int32_t linha = contexto->posicao.linha;
+	int32_t coluna = contexto->posicao.coluna;
+
+	// Mensagem de erro.
+	fprintf(stderr,
+		COR(_RESET) COR_NEGRITO(_RESET) "%s:%d:%d: %s%s: " COR(_RESET),
+		contexto->fonte->caminho, linha, coluna, tipo_cor, tipo
+	);
+
+	//va_list arg;
+	//va_start(arg, _contexto);
+	//const char *format = va_arg(arg, const char *);
+	vfprintf(stderr, fmt, arg);
+	//va_end(arg);
+
+	// Printando a linha com marcador de erro.
+	const char *linha_src = pcc_codigo_fonte_get_linha(contexto->fonte, linha, 1);
 	coluna--;
 
 	size_t i, j;
 	putchar('\n');
 	for (i = 0; linha_src[i] != '\0' && linha_src[i] != '\n'; i++) {
 		if (i == coluna) {
-			printf("%s", cor_tipo);
-		} else if (i == coluna + token_comprimento) {
+			printf("%s", tipo_cor);
+		} else if (i == coluna + contexto->lexema_comprimento) {
 			printf(COR(_RESET));
 		}
 		putchar(linha_src[i]);
@@ -32,8 +72,8 @@ void log_print_linha(const char *linha_src, size_t token_comprimento, const char
 		char s = linha_src[j] == '\t' ? '\t' : ' ';
 		putchar(s);
 	}
-	printf("%s^", cor_tipo);
-	for (j = 1; j < token_comprimento && linha_src[j] != '\n'; j++) {
+	printf("%s^", tipo_cor);
+	for (j = 1; j < contexto->lexema_comprimento && linha_src[j] != '\n'; j++) {
 		putchar('~');
 	}
 	puts(COR(_RESET));

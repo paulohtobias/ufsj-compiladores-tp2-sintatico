@@ -155,11 +155,7 @@ static void preprocessador_adicionar(const void *_contexto) {
 			} else if (token.contexto._lexema[i] == '\n') {
 				if (posicao_barra != -1) {
 					if (posicao_barra + 1 < i) {
-						LOG_WARNING(
-							token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-							token.contexto.linha_src, token.contexto.lexema_comprimento,
-							"espaços antes da barra invertida (\\) antes da quebra de linha"
-						);
+						pcc_log_warning(&token.contexto, "espaços antes da barra invertida (\\) antes da quebra de linha");
 					}
 
 					posicao_final = posicao_barra;
@@ -181,11 +177,7 @@ static void preprocessador_adicionar(const void *_contexto) {
 
 		token_adicionar(&token);
 	} else {
-		LOG_ERRO(
-			contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
-			contexto->linha_src, contexto->lexema_comprimento,
-			"diretiva de pré-processamento inválida"
-		);
+		pcc_log_erro(contexto, "diretiva de pré-processamento inválida");
 	}
 }
 

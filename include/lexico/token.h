@@ -15,6 +15,7 @@
 #include <stddef.h>
 #include "lexico/afd.h"
 #include "log.h"
+#include "lexico/codigo_fonte.h"
 
 // X-macro para gerar os códigos de token.
 #define TOKEN_CODIGOS \
@@ -44,10 +45,7 @@ TOKEN_CODIGOS
 #undef TOKEN_CODIGO
 
 typedef struct token_contexto_t {
-	char *arquivo;
-
-	char *linha_src;
-	size_t linha_comprimento;
+	const pcc_codigo_fonte_t *fonte;
 
 	/// Aponta pra linha_src + posicao.coluna
 	char * _lexema;
