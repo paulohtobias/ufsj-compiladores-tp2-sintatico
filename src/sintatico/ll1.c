@@ -363,7 +363,7 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 
 	char str[128];
 
-	pcc_producao_t producao_atual = (pcc_producao_t) {0};
+	pcc_producao_t *producao_atual = NULL;
 	pcc_producao_t *producoes = NULL;
 
 	const int16_t *indice;
@@ -391,7 +391,13 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 
 				variaveis_qtd++;
 			}
-			producao_atual.origem = *indice;
+			plist_append(producoes, (pcc_producao_t) {0});
+			producao_atual = producoes + plist_len(producoes) - 1;
+			producao_atual->id = plist_len(producoes) - 1;
+			producao_atual->origem = *indice;
+			producao_atual->simbolos = NULL;
+			producao_atual->acao = NULL;
+
 		} else if (estado > 1) {
 			pcc_simbolo_t simbolo;
 			pcc_simbolo_id_terminal_t token_id;
@@ -413,42 +419,12 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 				simbolo.id.variavel = *indice;
 			}
 
-			#if 0
-			plist_append(producao_atual.simbolos, simbolo);
-			#else
-			do {
-				plist_t *plist = __PLIST_L2P(producao_atual.simbolos);
-				size_t index = (size_t) (plist_len(producao_atual.simbolos));
-				if ((producao_atual.simbolos) == NULL) {
-					//__PLIST_RESIZE(plist, producao_atual.simbolos, PLIST_CAPACITY_INCREMENT);
-					do {
-						plist = PLIST_REALLOC(plist, (PLIST_CAPACITY_INCREMENT) * sizeof *(producao_atual.simbolos) + sizeof *plist);
-						plist->capacity = (PLIST_CAPACITY_INCREMENT);
-						(producao_atual.simbolos) = (void *) plist + sizeof *plist;
-					} while(0);
-					plist->length = 0;
-				} else if (index >= plist->capacity) {
-					//__PLIST_RESIZE(plist, producao_atual.simbolos, index + PLIST_CAPACITY_INCREMENT);
-					do {
-						plist = PLIST_REALLOC(plist, (index + PLIST_CAPACITY_INCREMENT) * sizeof *(producao_atual.simbolos) + sizeof *plist);
-						plist->capacity = (index + PLIST_CAPACITY_INCREMENT);
-						(producao_atual.simbolos) = (void *) plist + sizeof *plist;
-					} while(0);
-				}
-				(producao_atual.simbolos)[(index)] = (simbolo);
-				plist->length++;
-			} while(0);
-			#endif
+			plist_append(producao_atual->simbolos, simbolo);
 		}
 
 		estado += estado >= 0;
 		if (fgetc(in) == '\n') {
-			if (estado >= 0) {
-				plist_append(producoes, producao_atual);
-			}
-
 			estado = 0;
-			producao_atual.simbolos = NULL;
 		}
 	}
 	fclose(in);

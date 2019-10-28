@@ -15,25 +15,17 @@
 
 // Custom capacity increment.
 #ifndef PLIST_CAPACITY_INCREMENT
-#define PLIST_CAPACITY_INCREMENT 10 // Arbitrary value.
+#define PLIST_CAPACITY_INCREMENT 1 // Arbitrary value.
 #endif // PLIST_CAPACITY_INCREMENT
 
 // Custom memory allocators.
-#ifndef PLIST_MALLOC
+#ifndef PLIST_CUSTOM_MA
+#include <stdlib.h>
 #define PLIST_MALLOC malloc
-#endif // PLIST_MALLOC
-
-#ifndef PLIST_CALLOC
 #define PLIST_CALLOC calloc
-#endif // PLIST_CALLOC
-
-#ifndef PLIST_REALLOC
 #define PLIST_REALLOC realloc
-#endif // PLIST_REALLOC
-
-#ifndef PLIST_FREE
 #define PLIST_FREE free
-#endif // PLIST_FREE
+#endif // PLIST_CUSTOM_MA
 
 
 typedef struct plist_t {
