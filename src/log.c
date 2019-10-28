@@ -14,6 +14,11 @@ uint32_t _log_warnings = 0;
 uint32_t _log_erros = 0;
 
 void log_mensagem(const char *tipo, const char *tipo_cor, uint32_t *log, const pcc_codigo_fonte_t *fonte, int32_t linha, int32_t coluna, size_t token_comprimento, ...) {
+	if (log != NULL) {
+		(*log)++;
+	}
+
+	// Mensagem de erro.
 	fprintf(stderr,
 		COR(_RESET) COR_NEGRITO(_RESET) "%s:%d:%d: %s%s: " COR(_RESET),
 		fonte->caminho, linha, coluna, tipo_cor, tipo
@@ -25,21 +30,15 @@ void log_mensagem(const char *tipo, const char *tipo_cor, uint32_t *log, const p
 	vfprintf(stderr, format, arg);
 	va_end(arg);
 
-	log_print_linha(pcc_codigo_fonte_get_linha(fonte, linha, 1), token_comprimento, tipo_cor, coluna);
-
-	if (log != NULL) {
-		(*log)++;
-	}
-}
-
-void log_print_linha(const char *linha_src, size_t token_comprimento, const char *cor_tipo, int32_t coluna) {
+	// Printando a linha com marcador de erro.
+	const char *linha_src = pcc_codigo_fonte_get_linha(fonte, linha, 1);
 	coluna--;
 
 	size_t i, j;
 	putchar('\n');
 	for (i = 0; linha_src[i] != '\0' && linha_src[i] != '\n'; i++) {
 		if (i == coluna) {
-			printf("%s", cor_tipo);
+			printf("%s", tipo_cor);
 		} else if (i == coluna + token_comprimento) {
 			printf(COR(_RESET));
 		}
@@ -52,7 +51,7 @@ void log_print_linha(const char *linha_src, size_t token_comprimento, const char
 		char s = linha_src[j] == '\t' ? '\t' : ' ';
 		putchar(s);
 	}
-	printf("%s^", cor_tipo);
+	printf("%s^", tipo_cor);
 	for (j = 1; j < token_comprimento && linha_src[j] != '\n'; j++) {
 		putchar('~');
 	}

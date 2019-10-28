@@ -81,7 +81,6 @@ static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna, token_c
 
 int lexico_parse(const char *nome_arquivo) {
 	// Carregando o arquivo para a memória. TODO: usar mmap
-	size_t comprimento;
 	pcc_codigo_fonte_t *codigo_fonte = pcc_codigo_fonte_abir(nome_arquivo);
 
 	char *src = codigo_fonte->src;
@@ -133,7 +132,7 @@ int lexico_parse(const char *nome_arquivo) {
 					printf("fmt: %p\n&fmt: %p\n", fmt, &fmt);
 					LOG_ERRO(
 						contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna,
-						contexto.linha_src, simbolo_comprimento,
+						simbolo_comprimento,
 						fmt, simbolo_comprimento, contexto._lexema
 					);
 				}

@@ -157,7 +157,7 @@ static void preprocessador_adicionar(const void *_contexto) {
 					if (posicao_barra + 1 < i) {
 						LOG_WARNING(
 							token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-							token.contexto.linha_src, token.contexto.lexema_comprimento,
+							token.contexto.lexema_comprimento,
 							"espaços antes da barra invertida (\\) antes da quebra de linha"
 						);
 					}
@@ -183,7 +183,7 @@ static void preprocessador_adicionar(const void *_contexto) {
 	} else {
 		LOG_ERRO(
 			contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
-			contexto->linha_src, contexto->lexema_comprimento,
+			contexto->lexema_comprimento,
 			"diretiva de pré-processamento inválida"
 		);
 	}

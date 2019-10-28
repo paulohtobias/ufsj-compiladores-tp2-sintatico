@@ -110,7 +110,7 @@ static void comentario_incompleto(const void *_contexto) {
 
 	LOG_ERRO(
 		contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
-		contexto->linha_src, contexto->lexema_comprimento,
+		contexto->lexema_comprimento,
 		"comentário incompleto."
 	);
 }
