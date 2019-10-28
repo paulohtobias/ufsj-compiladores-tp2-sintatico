@@ -129,7 +129,7 @@ int lexico_parse(const char *nome_arquivo) {
 				if (!moveu) {
 					LOG_ERRO(
 						contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna,
-						contexto.linha_src, contexto.linha_comprimento,
+						contexto.linha_src, simbolo_comprimento,
 						"símbolo '%.*s' inválido", simbolo_comprimento, contexto._lexema
 					);
 				}
