@@ -20,11 +20,10 @@ void log_print_linha(const char *linha_src, size_t token_comprimento, const char
 	for (i = 0; linha_src[i] != '\0' && linha_src[i] != '\n'; i++) {
 		if (i == coluna) {
 			printf("%s", cor_tipo);
-		}
-		putchar(linha_src[i]);
-		if (i == coluna + token_comprimento) {
+		} else if (i == coluna + token_comprimento) {
 			printf(COR(_RESET));
 		}
+		putchar(linha_src[i]);
 	}
 
 	// Marcador
