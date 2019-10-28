@@ -150,12 +150,12 @@ void token_print(FILE *out, const token_t *token) {
 		"\tSubtipo: %s\n"
 		"\tArquivo: %s\n"
 		"\tLinha: %u | Coluna: %u\n"
-		"\tLexema: %s\n",
+		"\tLexema: %.*s\n",
 		__token_codigo_str[token->tipo],
 		subtipo,
 		token->contexto.fonte->caminho,
 		token->contexto.posicao.linha, token->contexto.posicao.coluna,
-		token->contexto._lexema
+		(int) token->contexto.lexema_comprimento, token->contexto._lexema
 	);
 	if (_valor != NULL) {
 		fprintf(out, "\tValor: %s\n\n", _valor);

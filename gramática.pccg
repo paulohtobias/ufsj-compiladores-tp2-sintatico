@@ -152,9 +152,11 @@ STMT := STMT-PULO
 # Statement composto (talvez seja recursão à esquerda)
 STMT-COMPOSTO := { STMT-LIST }
 
-# TODO: Expressões (termina em ;)
+# Expressões (termina em ;)
 STMT-EXPR := EXPR ;
+STMT-EXPR := ;
 
+# Expressão TODO
 EXPR := T E'
 E' := + T E'
 E' :=
@@ -173,13 +175,13 @@ F := float-literal
 F := double-literal
 F := long-double-literal
 
-
 # Condicional
 STMT-COND := if ( EXPR ) STMT-COMPOSTO STMT-COND'
 STMT-COND' := else STMT-COMPOSTO
 STMT-COND' :=
 
 # Laço
+# TODO:
 STMT-LAÇO := while ( EXPR ) STMT
 
 # Pulo incondicional

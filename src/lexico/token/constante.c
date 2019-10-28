@@ -333,19 +333,20 @@ static void int_adicionar(const void *contexto) {
 	// Verificando se o sufixo é válido.
 	bool u = false, l = false;
 	bool sufixo_valido = false;
-	while (*fim != '\0') {
-		char sufixo = tolower((unsigned char) *fim);
+	size_t sufixo_offset = fim - token.contexto._lexema;
+	while (sufixo_offset < token.contexto.lexema_comprimento) {
+		char sufixo = tolower((unsigned char) token.contexto._lexema[sufixo_offset]);
 
 		sufixo_valido = false;
 		if (!u && sufixo == 'u') {
-			fim++;
+			sufixo_offset++;
 			u = sufixo_valido = true;
 
 			// Alterando o subtipo.
 			token.subtipo = l ? TK_CNST_ULINT : TK_CNST_UINT;
 		}
 		if (!l && sufixo == 'l') {
-			fim++;
+			sufixo_offset++;
 			l = sufixo_valido = true;
 
 			// Alterando o subtipo.
@@ -353,7 +354,7 @@ static void int_adicionar(const void *contexto) {
 		}
 
 		if (!sufixo_valido) {
-			pcc_log_erro(contexto, "sufixo \"%s\" inválido em constante inteiro", fim);
+			pcc_log_erro(contexto, "sufixo \"%.*s\" inválido em constante inteiro", token.contexto.lexema_comprimento - sufixo_offset, &token.contexto._lexema[sufixo_offset]);
 			token_liberar(&token);
 			return;
 		}
@@ -386,19 +387,20 @@ static void double_adicionar(const void *contexto) {
 	// Verificando se o sufixo é válido.
 	bool f = false, l = false;
 	bool sufixo_valido = false;
-	while (*fim != '\0') {
-		char sufixo = tolower((unsigned char) *fim);
+	size_t sufixo_offset = fim - token.contexto._lexema;
+	while (sufixo_offset < token.contexto.lexema_comprimento) {
+		char sufixo = tolower((unsigned char) token.contexto._lexema[sufixo_offset]);
 
 		sufixo_valido = false;
 		if (!f && sufixo == 'f') {
-			fim++;
+			sufixo_offset++;
 			f = sufixo_valido = true;
 
 			// Alterando o subtipo.
 			token.subtipo = TK_CNST_FLT;
 		}
 		if (!l && sufixo == 'l') {
-			fim++;
+			sufixo_offset++;
 			l = sufixo_valido = true;
 
 			// Alterando o subtipo.
@@ -406,7 +408,7 @@ static void double_adicionar(const void *contexto) {
 		}
 
 		if (!sufixo_valido || (f && l)) {
-			pcc_log_erro(contexto, "sufixo \"%s\" inválido em constante de ponto flutuante", fim);
+			pcc_log_erro(contexto, "sufixo \"%.*s\" inválido em constante de ponto flutuante", token.contexto.lexema_comprimento - sufixo_offset, &token.contexto._lexema[sufixo_offset]);
 			token_liberar(&token);
 			return;
 		}

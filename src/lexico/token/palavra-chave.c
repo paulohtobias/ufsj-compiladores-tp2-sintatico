@@ -49,7 +49,7 @@ int token_palavra_chave_buscar(const token_t *token) {
 		index = novo_index;
 
 		int i;
-		for (i = 0; token->contexto._lexema[i] != '\0' && __palavras_chave[index][i] != '\0'; i++) {
+		for (i = 0; __palavras_chave[index][i] != '\0' && i < token->contexto.lexema_comprimento; i++) {
 			if (token->contexto._lexema[i] < __palavras_chave[index][i]) {
 				fim = index;
 				break;
@@ -59,7 +59,7 @@ int token_palavra_chave_buscar(const token_t *token) {
 			}
 		}
 
-		if (token->contexto._lexema[i] == '\0' && __palavras_chave[index][i] == '\0') {
+		if (__palavras_chave[index][i] == '\0' && i == token->contexto.lexema_comprimento) {
 			return index;
 		}
 	}

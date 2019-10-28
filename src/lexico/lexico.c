@@ -119,9 +119,9 @@ int lexico_parse(const char *nome_arquivo) {
 				estado_atual->acao(&contexto);
 
 				/*
-				* Se houve uma transição antes do erro, então o símbolo é
-				* considerado como um separador e não será consumido.
-				*/
+				 * Se houve uma transição antes do erro, então o símbolo é
+				 * considerado como um separador e não será consumido.
+				 */
 				if (!moveu) {
 					avancar_cursor(&src, simbolo_comprimento, &linha, &coluna, &contexto);
 				}
