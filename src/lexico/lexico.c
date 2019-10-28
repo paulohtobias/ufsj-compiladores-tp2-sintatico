@@ -117,10 +117,17 @@ int lexico_parse(const char *nome_arquivo) {
 			 */
 			if (estado_atual->acao != NULL) {
 				estado_atual->acao(&contexto);
+
+				/*
+				* Se houve uma transição antes do erro, então o símbolo é
+				* considerado como um separador e não será consumido.
+				*/
+				if (!moveu) {
+					avancar_cursor(&src, simbolo_comprimento, &linha, &coluna, &contexto);
+				}
 			} else {
 				if (!moveu) {
-					/// TODO: apagar const char *fmt = "símbolo '%.*s' inválido";
-					/// TODO: apagar printf("fmt: %p\n&fmt: %p\n", fmt, &fmt);
+					avancar_cursor(&src, simbolo_comprimento, &linha, &coluna, &contexto);
 					pcc_log_erro(
 						&contexto,
 						"símbolo '%.*s' inválido", simbolo_comprimento, contexto._lexema
@@ -128,13 +135,6 @@ int lexico_parse(const char *nome_arquivo) {
 				}
 			}
 
-			/*
-			 * Se houve uma transição antes do erro, então o símbolo é
-			 * considerado como um separador e não será consumido.
-			 */
-			if (!moveu) {
-				avancar_cursor(&src, simbolo_comprimento, &linha, &coluna, &contexto);
-			}
 
 			// Resetando o contexto.
 			ignorar_espacos(&src, &linha, &coluna, &contexto);

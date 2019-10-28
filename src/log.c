@@ -45,11 +45,7 @@ void pcc_log_mensagem(const char *tipo, const char *tipo_cor, const void *_conte
 		contexto->fonte->caminho, linha, coluna, tipo_cor, tipo
 	);
 
-	//va_list arg;
-	//va_start(arg, _contexto);
-	//const char *format = va_arg(arg, const char *);
 	vfprintf(stderr, fmt, arg);
-	//va_end(arg);
 
 	// Printando a linha com marcador de erro.
 	const char *linha_src = pcc_codigo_fonte_get_linha(contexto->fonte, linha, 1);
