@@ -185,6 +185,9 @@ static void calcular_first(pcc_ll1_t *gramatica) {
 }
 
 static void calcular_follow(pcc_ll1_t *gramatica) {
+	pcc_simbolo_id_terminal_t $ = {TK_$, TK_$};
+	plist_append(gramatica->variaveis[gramatica->variavel_inicial].follow, $);
+
 	bool alteracao;
 	do {
 		alteracao = false;
@@ -300,6 +303,7 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 
 		// FOLLOW
 		if (gera_vazio) {
+			bool follow_$ = false;
 			for (size_t j = 0; j < plist_len(gramatica->variaveis[producao->origem].follow); j++) {
 				const pcc_simbolo_id_terminal_t *terminal = gramatica->variaveis[producao->origem].follow + j;
 
@@ -313,6 +317,29 @@ static void calcular_tabela_M(pcc_ll1_t *gramatica) {
 						LOG_PCC_ERRO(1, NULL,
 							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
 							token_tipo_subtipo_str(terminal->tipo, terminal->subtipo), gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
+						);
+					}
+				} else {
+					plist_append(gramatica->variaveis[producao->origem].M, M);
+				}
+
+				if (terminal->tipo == TK_$ && terminal->subtipo == TK_$) {
+					follow_$ = true;
+				}
+			}
+
+			if (follow_$) {
+				struct pcc_ll1_M_t M;
+				M.producao_id = producao->id;
+				M.token.tipo = TK_$;
+				M.token.subtipo = TK_$;
+
+				int32_t producao_id = _plist_find(gramatica->variaveis[producao->origem].M, &M, token_cmp);
+				if (producao_id != -1) {
+					if (gramatica->variaveis[producao->origem].M[producao_id].producao_id != producao->id) {
+						LOG_PCC_ERRO(1, NULL,
+							"gramática não é LL(1) pois o símbolo %s pode ser substituído em mais de uma produção (%d) e (%d)",
+							token_tipo_subtipo_str(M.token.tipo, M.token.subtipo), gramatica->variaveis[producao->origem].M[producao_id].producao_id, producao->id
 						);
 					}
 				} else {
@@ -608,39 +635,39 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		}
 	}
 
-	while (i < lista_tokens_qtd) {
-		pcc_log_erro(
-			&lista_tokens[i].contexto,
-			"token " COR_TOKEN "%s" COR(_RESET) " inválido",
-			token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
-		);
-		i++;
+	if (i < lista_tokens_qtd) {
+		while (i < lista_tokens_qtd) {
+			pcc_log_erro(
+				&lista_tokens[i].contexto,
+				"token " COR_TOKEN "%s" COR(_RESET) " inválido",
+				token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
+			);
+			i++;
+		}
+	} else {
+		while (plist_len(pilha) > 0) {
+			// Consome os não terminais que geram $
+			const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
+
+			if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
+				break;
+			} else {
+				const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
+
+				pcc_simbolo_id_terminal_t $ = {TK_$, TK_$};
+
+				int32_t producao_id = _plist_find(variavel_topo->M, &$, token_cmp);
+				if (producao_id == -1) {
+					break;
+				}
+
+				pilha_remover(&pilha);
+			}
+		}
 	}
 
-	/// TODO: talvez é preciso inserir o token $.
-	/// TODO: Alterar o comportamento em caso de erro.
-	while (plist_len(pilha) > 0) {
-		const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
-
-		if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
-			LOG_PCC_ERRO(0, NULL, "Há terminais na pilha.\n");
-			break;
-		} else if (gramatica->variaveis[pilha_topo->id.variavel].gera_vazio) {
-			pilha_remover(&pilha);
-		} else {
-			LOG_PCC_ERRO(0, NULL, "Sobraram %zu elementos na pilha.\n", plist_len(pilha));
-			for (int32_t i = plist_len(pilha) - 1; i >= 0; i--) {
-				if (pilha[i].tipo == SIMBOLO_TERMINAL) {
-					printf(" " COR_TOKEN "%s", token_tipo_subtipo_str(pilha[i].id.token.tipo, pilha[i].id.token.subtipo));
-				} else {
-					printf(" " COR_VARIAVEL "%d", pilha[i].id.variavel);
-				}
-				printf(COR(_RESET));
-			}
-			printf(COR(_RESET) "\n");
-
-			break;
-		}
+	if (plist_len(pilha) > 0) {
+		pcc_log_erro(&lista_tokens[lista_tokens_qtd - 1].contexto, "fim inesperado de input");
 	}
 
 	plist_free(pilha);

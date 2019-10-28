@@ -15,7 +15,7 @@
 pcc_ll1_t gramatica_lexico;
 
 const char *pcc_gramatica_g_std = PCC_GRAMATICA_ARQUIVO;
-bool pcc_gramatica_g_print_gramatica = false;
+int pcc_gramatica_g_print_gramatica = 1;
 
 void pcc_gramatica_init(const char *pcc_gramatica_std) {
 	// TODO
@@ -26,12 +26,14 @@ void pcc_gramatica_init(const char *pcc_gramatica_std) {
 	}
 	pcc_ll1_de_arquivo(&gramatica_lexico, pcc_gramatica_std);
 
-	if (pcc_gramatica_g_print_gramatica) {
+	if (pcc_gramatica_g_print_gramatica > 0) {
 		pcc_ll1_print(&gramatica_lexico);
 
-		pcc_gramatica_finalizar();
-		pcc_codigo_fonte_finalizar();
-		exit(0);
+		if (pcc_gramatica_g_print_gramatica > 1) {
+			pcc_gramatica_finalizar();
+			pcc_codigo_fonte_finalizar();
+			exit(0);
+		}
 	}
 }
 
@@ -45,7 +47,7 @@ void pcc_gramatica_finalizar() {
 void pcc_gramatica_teste(const char *nome_arquivo) {
 	lexico_parse(nome_arquivo);
 
-	/**
+	/**/
 	for (size_t i = 0; i < plist_len(lista_tokens); i++) {
 		token_print(stdout, lista_tokens + i);
 	}

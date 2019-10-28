@@ -16,7 +16,7 @@
 #define PCC_GRAMATICA_ARQUIVO "gramática"
 #endif // PCC_GRAMATICA_ARQUIVO
 
-extern bool pcc_gramatica_g_print_gramatica;
+extern int pcc_gramatica_g_print_gramatica;
 
 void pcc_gramatica_init(const char *pcc_gramatica_std);
 

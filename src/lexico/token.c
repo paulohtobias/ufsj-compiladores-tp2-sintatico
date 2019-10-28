@@ -75,6 +75,10 @@ const char *token_subtipo_str(const token_t *token) {
 }
 
 const char *token_tipo_subtipo_str(int32_t tipo, int32_t subtipo) {
+	if (tipo == TK_$ && subtipo == TK_$) {
+		return "$";
+	}
+
 	if (tipo >= TK_COUNT || subtipo >= plist_len(__token_str[tipo])) {
 		return "";
 	}

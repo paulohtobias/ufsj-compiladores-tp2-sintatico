@@ -65,7 +65,14 @@ char *pcc_codigo_fonte_get_linha(const pcc_codigo_fonte_t *fonte, int32_t linha,
 		coluna = 0;
 	}
 
-	return fonte->src + (fonte->offset_linhas[linha] + coluna);
+	char *src = fonte->src + fonte->offset_linhas[linha];
+
+	while (coluna > 0) {
+		src += utf8_simbolo_comprimento(src);
+		coluna--;
+	}
+
+	return src;
 }
 
 void pcc_codigo_fonte_liberar(pcc_codigo_fonte_t *fonte) {
