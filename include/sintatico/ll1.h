@@ -12,12 +12,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "lexico/token.h"
 
-/**
- * TODO: mudar a lógica do id da variável
- * pra usar x-macro e deixar os ids pré-definidos.
- * Desse jeito não vai precisar usar string em lugar nenhum.
- */
+/// Controla o nível das mensagens de debug. 0: desligado.
+extern int pcc_ll1_g_debug;
 
 enum {
 	SIMBOLO_TERMINAL,

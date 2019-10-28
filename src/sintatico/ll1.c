@@ -13,13 +13,11 @@
 #include "log.h"
 #include "plist.h"
 #include "pdict.h"
-#include "lexico/lexico.h"
 #include "sintatico/ll1.h"
 
 #define COR_TOKEN COR(";40") COR_NEGRITO(_AZUL)
 #define COR_VARIAVEL COR(";40") COR_NEGRITO(_VERDE)
 
-/// Controla o nível das mensagens de debug. 0: desligado.
 int pcc_ll1_g_debug = 0;
 
 static int token_cmp(const void *tk1, const void *tk2);
@@ -507,7 +505,6 @@ static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {
 		}
 		printf(COR(_RESET));
 	}
-	putchar('\n');
 }
 
 int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
@@ -531,6 +528,8 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 			if (pcc_ll1_g_debug > 1) {
 				getchar();
+			} else {
+				putchar('\n');
 			}
 		}
 
