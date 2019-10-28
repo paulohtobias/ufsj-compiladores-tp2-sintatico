@@ -20,7 +20,7 @@
 #define COR_VARIAVEL COR(";40") COR_NEGRITO(_VERDE)
 
 /// Controla o nível das mensagens de debug. 0: desligado.
-int pcc_ll1_g_debug = 1;
+int pcc_ll1_g_debug = 0;
 
 static int token_cmp(const void *tk1, const void *tk2);
 static void calcular_vazio(pcc_ll1_t *gramatica);
@@ -483,7 +483,7 @@ static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {
 	putchar('\n');
 }
 
-void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
+int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	pcc_simbolo_t *pilha = NULL;
 	int32_t *acoes = NULL;
 
@@ -608,19 +608,24 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		}
 	}
 
-	if (i < lista_tokens_qtd) {
-		LOG_PCC_ERRO(1, NULL, "Há tokens %zu não reconhecidos.\n", lista_tokens_qtd - i);
+	while (i < lista_tokens_qtd) {
+		pcc_log_erro(
+			&lista_tokens[i].contexto,
+			"token " COR_TOKEN "%s" COR(_RESET) " inválido",
+			token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
+		);
+		i++;
 	}
 
 	/// TODO: talvez é preciso inserir o token $.
+	/// TODO: Alterar o comportamento em caso de erro.
 	while (plist_len(pilha) > 0) {
 		const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
 
 		if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
-			LOG_PCC_ERRO(1, NULL, "Há terminais na pilha.\n");
-		}
-
-		if (gramatica->variaveis[pilha_topo->id.variavel].gera_vazio) {
+			LOG_PCC_ERRO(0, NULL, "Há terminais na pilha.\n");
+			break;
+		} else if (gramatica->variaveis[pilha_topo->id.variavel].gera_vazio) {
 			pilha_remover(&pilha);
 		} else {
 			LOG_PCC_ERRO(0, NULL, "Sobraram %zu elementos na pilha.\n", plist_len(pilha));
@@ -633,9 +638,14 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				printf(COR(_RESET));
 			}
 			printf(COR(_RESET) "\n");
-			exit(1);
+
+			break;
 		}
 	}
+
+	plist_free(pilha);
+
+	return acoes;
 }
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica) {

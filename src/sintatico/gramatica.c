@@ -15,7 +15,7 @@
 pcc_ll1_t gramatica_lexico;
 
 const char *pcc_gramatica_g_std = PCC_GRAMATICA_ARQUIVO;
-bool pcc_gramatica_g_print_gramatica = true;
+bool pcc_gramatica_g_print_gramatica = false;
 
 void pcc_gramatica_init(const char *pcc_gramatica_std) {
 	// TODO
@@ -53,5 +53,7 @@ void pcc_gramatica_teste(const char *nome_arquivo) {
 	//exit(0);
 
 
-	pcc_ll1_reconhecer(&gramatica_lexico, lista_tokens);
+	int32_t *acoes = pcc_ll1_reconhecer(&gramatica_lexico, lista_tokens);
+
+	plist_free(acoes);
 }

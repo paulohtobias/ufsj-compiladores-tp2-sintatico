@@ -91,7 +91,7 @@ void pcc_ll1_calcular(pcc_ll1_t *gramatica);
 
 void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao);
 
-void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
+int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 
 void pcc_ll1_print(const pcc_ll1_t *gramatica);
 
