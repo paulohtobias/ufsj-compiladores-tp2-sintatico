@@ -13,10 +13,12 @@
 #include "sintatico/ll1.h"
 
 #ifndef PCC_GRAMATICA_ARQUIVO
-#define PCC_GRAMATICA_ARQUIVO "gramática.pccg"
+#define PCC_GRAMATICA_ARQUIVO "gramática"
 #endif // PCC_GRAMATICA_ARQUIVO
 
-void pcc_gramatica_init();
+extern bool pcc_gramatica_g_print_gramatica;
+
+void pcc_gramatica_init(const char *pcc_gramatica_std);
 
 void pcc_gramatica_finalizar();
 

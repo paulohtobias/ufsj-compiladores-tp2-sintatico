@@ -25,12 +25,12 @@ enum {
 };
 
 typedef struct pcc_simbolo_id_terminal_t {
-	uint32_t tipo;
-	uint32_t subtipo;
+	int32_t tipo;
+	int32_t subtipo;
 } pcc_simbolo_id_terminal_t;
 
 typedef struct pcc_variavel_t {
-	uint32_t cod;
+	int32_t cod;
 	char *nome;
 
 	bool gera_vazio;
@@ -39,14 +39,14 @@ typedef struct pcc_variavel_t {
 
 	struct pcc_ll1_M_t {
 		pcc_simbolo_id_terminal_t token;
-		uint32_t producao_id;
+		int32_t producao_id;
 	} *M;
 } pcc_variavel_t;
 
 typedef union pcc_simbolo_id_u {
 	pcc_simbolo_id_terminal_t token;
 
-	uint32_t variavel;
+	int32_t variavel;
 } pcc_simbolo_id_u;
 
 typedef struct pcc_simbolo_t {
@@ -57,10 +57,10 @@ typedef struct pcc_simbolo_t {
 
 typedef struct pcc_producao_t {
 	/// Índice da produção na lista de produções da gramática.
-	uint32_t id;
+	int32_t id;
 
 	/// Id da variável.
-	uint32_t origem;
+	int32_t origem;
 
 	/// Cadeia de símbolos (terminais ou não terminais) que
 	/// substituirão `origem`.
@@ -87,7 +87,7 @@ void pcc_ll1_add_producao(pcc_ll1_t *gramatica, pcc_producao_t producao);
 
 void pcc_ll1_calcular(pcc_ll1_t *gramatica);
 
-void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo);
+void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao);
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 

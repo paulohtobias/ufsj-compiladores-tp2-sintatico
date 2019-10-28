@@ -19,6 +19,9 @@
 #define COR_TOKEN COR(";40") COR_NEGRITO(_AZUL)
 #define COR_VARIAVEL COR(";40") COR_NEGRITO(_VERDE)
 
+/// Controla o nível das mensagens de debug. 0: desligado.
+int pcc_ll1_g_debug = 1;
+
 static int token_cmp(const void *tk1, const void *tk2);
 static void calcular_vazio(pcc_ll1_t *gramatica);
 static void calcular_first(pcc_ll1_t *gramatica);
@@ -318,11 +321,14 @@ static int token_cmp(const void *tk1, const void *tk2) {
 	return 0;
 }
 
-void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
+void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
+	size_t padrao_comprimento = strlen(padrao);
+	char nome_arquivo[padrao_comprimento + 6];
+	sprintf(nome_arquivo, "%s.pccg", padrao);
 	// Abre o arquivo.
 	FILE *in = fopen(nome_arquivo, "r");
 	if (in == NULL) {
-		LOG_PCC_ERRO(1, "não foi possível abrir o arquivo", " ");
+		LOG_PCC_ERRO(1, NULL, "padrão '%s' não encontrado", padrao);
 	}
 
 	uint16_t variaveis_qtd = 0;
@@ -412,8 +418,6 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *nome_arquivo) {
 	}
 
 	pcc_ll1_calcular(gramatica);
-
-	pcc_ll1_print(gramatica);
 }
 
 static void pilha_inserir(pcc_simbolo_t **pilha, pcc_simbolo_t *simbolos, int32_t simbolos_qtd) {
@@ -452,7 +456,7 @@ static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {
 		}
 		printf(COR(_RESET));
 	}
-
+	putchar('\n');
 }
 
 void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
@@ -465,8 +469,19 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 	size_t i = 0, lista_tokens_qtd = plist_len(lista_tokens);
 	while (i < lista_tokens_qtd && plist_len(pilha) > 0) {
-		//printf("ENTRADA:" COR_TOKEN "%s" COR(_RESET) "\n", token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo));
-		//pilha_print(gramatica, pilha); getchar();
+		if (pcc_ll1_g_debug > 0) {
+			printf("ENTRADA:");
+			const entrada_tamanho = 2;
+			for (size_t j = 0; j < entrada_tamanho; j++) {
+				printf(" " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i + j].tipo, lista_tokens[i + j].subtipo));
+			}
+			putchar('\n');
+			pilha_print(gramatica, pilha);
+
+			if (pcc_ll1_g_debug > 1) {
+				getchar();
+			}
+		}
 
 		bool erro = false;
 
@@ -491,6 +506,10 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				pilha_remover(&pilha);
 				plist_append(acoes, -1);
 				i++;
+
+				if (pcc_ll1_g_debug > 0) {
+					printf("Consumiu terminal\n");
+				}
 			}
 		} else {
 			const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
@@ -527,10 +546,18 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 				plist_append(acoes, producao->id);
 
-				//printf("Usada produção %u\n", producao->id);
+				if (pcc_ll1_g_debug > 0) {
+					printf("Usada produção %u\n", producao->id);
+				}
 			}
 		}
-		//getchar();
+		if (pcc_ll1_g_debug > 0) {
+			if (pcc_ll1_g_debug > 1) {
+				getchar();
+			} else {
+				putchar('\n');
+			}
+		}
 
 		// Tratamento de erro em modo pânico.
 		if (erro) {
@@ -546,10 +573,13 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 				 * FOLLOW(variavel_topo), quando também descartamos variavel_topo.
 				 * É provável que a análise sintática possa prosseguir.
 				 */
-				while (_plist_find(variavel_topo->follow, &lista_tokens[i], token_cmp) == -1) {
+				while (i < lista_tokens_qtd) {
+					if (_plist_find(variavel_topo->follow, &lista_tokens[i], token_cmp) != -1) {
+						pilha_remover(&pilha);
+						break;
+					}
 					i++;
 				}
-				pilha_remover(&pilha);
 			}
 		}
 	}

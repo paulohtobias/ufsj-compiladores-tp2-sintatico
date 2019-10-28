@@ -32,7 +32,7 @@ const char __extras_lexemas[][32] = {
 static void extra_adicionar(const void *contexto);
 
 /// Função to_str
-const char *extra_str(uint32_t subtipo);
+const char *extra_str(int32_t subtipo);
 
 int token_extra_init(afd_t *afd) {
 	int res = 0;
@@ -110,7 +110,7 @@ static void extra_adicionar(const void *_contexto) {
 	}
 }
 
-const char *extra_str(uint32_t subtipo) {
+const char *extra_str(int32_t subtipo) {
 	if (subtipo < __extras_quantidade) {
 		return __extras[subtipo];
 	}

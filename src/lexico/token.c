@@ -74,7 +74,7 @@ const char *token_subtipo_str(const token_t *token) {
 	return "";
 }
 
-const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo) {
+const char *token_tipo_subtipo_str(int32_t tipo, int32_t subtipo) {
 	if (tipo >= TK_COUNT || subtipo >= plist_len(__token_str[tipo])) {
 		return "";
 	}
@@ -82,7 +82,7 @@ const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo) {
 	return __token_str[tipo][subtipo];
 }
 
-bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo) {
+bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo) {
 	for (*tipo = 0; *tipo < TK_COUNT; (*tipo)++) {
 		for (*subtipo = 0; *subtipo < plist_len(__token_str[*tipo]); (*subtipo)++) {
 			if (strcmp(str, __token_str[*tipo][*subtipo]) == 0) {
@@ -94,7 +94,7 @@ bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo) 
 	return false;
 }
 
-token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *_contexto) {
+token_t token_criar(int32_t tipo, int32_t subtipo, const void *_contexto) {
 	token_t token;
 
 	const token_contexto_t *contexto = _contexto;

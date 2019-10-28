@@ -58,8 +58,8 @@ typedef struct token_contexto_t {
 } token_contexto_t;
 
 typedef struct token_t {
-	uint32_t tipo;
-	uint32_t subtipo;
+	int32_t tipo;
+	int32_t subtipo;
 
 	token_contexto_t contexto;
 
@@ -70,7 +70,7 @@ typedef struct token_t {
 		char *(*to_str)(const void *, size_t);
 	} valor;
 
-	const char *(*subtipo_to_str)(uint32_t);
+	const char *(*subtipo_to_str)(int32_t);
 } token_t;
 
 
@@ -113,18 +113,18 @@ const char *token_subtipo_str(const token_t *token);
  * Retorna uma string correspondente ao tipo e subtipo
  * do token sem a necessidade de se ter um token.
  */
-const char *token_tipo_subtipo_str(uint32_t tipo, uint32_t subtipo);
+const char *token_tipo_subtipo_str(int32_t tipo, int32_t subtipo);
 
 /**
  * Retorna o tipo e o subtipo de um token a partir de
  * uma string.
  */
-bool token_str_tipo_subtipo(const char *str, uint32_t *tipo, uint32_t *subtipo);
+bool token_str_tipo_subtipo(const char *str, int32_t *tipo, int32_t *subtipo);
 
 /**
  * Função genérica para criar um novo token.
  */
-token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *contexto);
+token_t token_criar(int32_t tipo, int32_t subtipo, const void *contexto);
 
 /**
  * Libera os dados do token que foram alocado dinâmicamente.

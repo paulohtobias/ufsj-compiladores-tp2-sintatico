@@ -48,7 +48,7 @@ static void str_incompleta(const void *contexto);
 static void char_incompleto(const void *contexto);
 
 /// Outras funções.
-static const char *subtipo_str(uint32_t subtipo);
+static const char *subtipo_str(int32_t subtipo);
 static char parse_escape_sequence(const token_t *token, const char **src);
 static char *int_to_str(const void *dados, size_t comprimento);
 
@@ -475,7 +475,7 @@ static void char_incompleto(const void *contexto) {
 }
 
 
-static const char *subtipo_str(uint32_t subtipo) {
+static const char *subtipo_str(int32_t subtipo) {
 	if (subtipo < __constantes_quantidade) {
 		return __constantes[subtipo];
 	}

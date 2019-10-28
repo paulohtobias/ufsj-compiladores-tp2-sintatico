@@ -14,11 +14,24 @@
 
 pcc_ll1_t gramatica_lexico;
 
-void pcc_gramatica_init() {
+const char *pcc_gramatica_g_std = PCC_GRAMATICA_ARQUIVO;
+bool pcc_gramatica_g_print_gramatica = true;
+
+void pcc_gramatica_init(const char *pcc_gramatica_std) {
 	// TODO
 	lexico_init();
 
-	pcc_ll1_de_arquivo(&gramatica_lexico, PCC_GRAMATICA_ARQUIVO);
+	if (pcc_gramatica_std == NULL) {
+		pcc_gramatica_std = pcc_gramatica_g_std;
+	}
+	pcc_ll1_de_arquivo(&gramatica_lexico, pcc_gramatica_std);
+
+	if (pcc_gramatica_g_print_gramatica) {
+		pcc_ll1_print(&gramatica_lexico);
+
+		pcc_gramatica_finalizar();
+		exit(0);
+	}
 }
 
 void pcc_gramatica_finalizar() {

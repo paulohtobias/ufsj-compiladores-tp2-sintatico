@@ -9,7 +9,7 @@ int main(int argc, char const *argv[]) {
 		LOG_PCC_ERRO(1, NULL, "missing filename");
 	}
 
-	pcc_gramatica_init();
+	pcc_gramatica_init(NULL);
 
 	pcc_gramatica_teste(argv[1]);
 

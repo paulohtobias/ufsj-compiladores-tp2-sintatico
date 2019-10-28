@@ -65,7 +65,7 @@ int token_palavra_chave_buscar(const token_t *token) {
 	}
 }
 
-const char *token_palavra_chave_subtipo_str(uint32_t subtipo) {
+const char *token_palavra_chave_subtipo_str(int32_t subtipo) {
 	if (subtipo < __palavras_chave_quantidade) {
 		return __palavras_chave[subtipo];
 	}

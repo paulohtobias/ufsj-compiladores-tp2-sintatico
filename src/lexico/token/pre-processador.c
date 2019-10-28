@@ -27,7 +27,7 @@ size_t __preprocessadores_quantidade = ARR_TAMANHO(__preprocessadores);
 static void preprocessador_adicionar(const void *contexto);
 
 /// Função subtipo_str.
-const char *preprocessador_str(uint32_t subtipo);
+const char *preprocessador_str(int32_t subtipo);
 
 /// Função to_str.
 char *preprocessador_to_str(const void *dados, size_t comprimento);
@@ -181,7 +181,7 @@ static void preprocessador_adicionar(const void *_contexto) {
 	}
 }
 
-const char *preprocessador_str(uint32_t subtipo) {
+const char *preprocessador_str(int32_t subtipo) {
 	if (subtipo < __preprocessadores_quantidade) {
 		return __preprocessadores[subtipo];
 	}

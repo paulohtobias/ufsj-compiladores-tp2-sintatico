@@ -32,7 +32,7 @@ const char __operadores_lexemas[][32] = {
 static void operador_adicionar(const void *contexto);
 
 /// Função to_str
-const char *operador_str(uint32_t subtipo);
+const char *operador_str(int32_t subtipo);
 
 int token_operador_init(afd_t *afd) {
 	int res = 0;
@@ -293,7 +293,7 @@ static void operador_adicionar(const void *_contexto) {
 	}
 }
 
-const char *operador_str(uint32_t subtipo) {
+const char *operador_str(int32_t subtipo) {
 	if (subtipo < __operadores_quantidade) {
 		return __operadores[subtipo];
 	}
