@@ -70,8 +70,8 @@ typedef struct plist_t {
 		plist_t *plist = __PLIST_L2P(list); \
 		size_t index = (size_t) (_index); \
 		if ((list) == NULL) { \
-			plist_create(list, PLIST_CAPACITY_INCREMENT); \
-			plist = __PLIST_L2P(list); \
+			__PLIST_RESIZE(plist, list, PLIST_CAPACITY_INCREMENT); \
+			plist->length = 0; \
 		} else if (index >= plist->capacity) { \
 			__PLIST_RESIZE(plist, list, index + PLIST_CAPACITY_INCREMENT); \
 		} \

@@ -14,6 +14,7 @@ int main(int argc, char const *argv[]) {
 	pcc_gramatica_teste(argv[1]);
 
 	pcc_gramatica_finalizar();
+	pcc_codigo_fonte_finalizar();
 
 	return 0;
 }

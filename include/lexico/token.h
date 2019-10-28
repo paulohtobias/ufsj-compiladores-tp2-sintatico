@@ -36,6 +36,7 @@ enum {
 	TK_COUNT // Quantidade de tipos de token.
 };
 #undef TOKEN_CODIGO
+#define TK_$ -1
 
 extern char **__token_str[TK_COUNT];
 

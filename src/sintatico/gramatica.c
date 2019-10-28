@@ -30,6 +30,7 @@ void pcc_gramatica_init(const char *pcc_gramatica_std) {
 		pcc_ll1_print(&gramatica_lexico);
 
 		pcc_gramatica_finalizar();
+		pcc_codigo_fonte_finalizar();
 		exit(0);
 	}
 }
@@ -37,6 +38,8 @@ void pcc_gramatica_init(const char *pcc_gramatica_std) {
 void pcc_gramatica_finalizar() {
 	/// TODO:
 	lexico_finalizar();
+
+	pcc_ll1_liberar(&gramatica_lexico);
 }
 
 void pcc_gramatica_teste(const char *nome_arquivo) {

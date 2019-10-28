@@ -81,7 +81,9 @@ typedef struct pcc_ll1_t {
 	pcc_producao_t *producoes;
 } pcc_ll1_t;
 
-void pcc_ll1_init(pcc_ll1_t *gramatica, char **nome_variaveis);
+void pcc_ll1_criar(pcc_ll1_t *gramatica, char **nome_variaveis);
+
+void pcc_ll1_liberar(pcc_ll1_t *gramatica);
 
 void pcc_ll1_add_producao(pcc_ll1_t *gramatica, pcc_producao_t producao);
 

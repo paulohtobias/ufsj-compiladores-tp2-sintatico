@@ -28,7 +28,7 @@ static void calcular_first(pcc_ll1_t *gramatica);
 static void calcular_follow(pcc_ll1_t *gramatica);
 static void calcular_tabela_M(pcc_ll1_t *gramatica);
 
-void pcc_ll1_init(pcc_ll1_t *gramatica, char **nome_variaveis) {
+void pcc_ll1_criar(pcc_ll1_t *gramatica, char **nome_variaveis) {
 	plist_create(gramatica->variaveis, plist_len(nome_variaveis));
 	for (uint16_t i = 0; i < plist_len(nome_variaveis); i++) {
 		pcc_variavel_t variavel;
@@ -44,6 +44,23 @@ void pcc_ll1_init(pcc_ll1_t *gramatica, char **nome_variaveis) {
 	gramatica->variavel_inicial = -1;
 
 	gramatica->producoes = NULL;
+}
+
+void pcc_ll1_liberar(pcc_ll1_t *gramatica) {
+	for (size_t i = 0; i < plist_len(gramatica->variaveis); i++) {
+		pcc_variavel_t *variavel = gramatica->variaveis + i;
+
+		free(variavel->nome);
+		plist_free(variavel->first);
+		plist_free(variavel->follow);
+		plist_free(variavel->M);
+	}
+	plist_free(gramatica->variaveis);
+
+	for (size_t i = 0; i < plist_len(gramatica->producoes); i++) {
+		plist_free(gramatica->producoes[i].simbolos);
+	}
+	plist_free(gramatica->producoes);
 }
 
 void pcc_ll1_add_producao(pcc_ll1_t *gramatica, pcc_producao_t producao) {
@@ -63,9 +80,11 @@ void pcc_ll1_calcular(pcc_ll1_t *gramatica) {
 	}
 	for (uint16_t i = 0; i < plist_len(gramatica->variaveis); i++) {
 		if (!origens[i]) {
+			free(origens);
 			LOG_PCC_ERRO(1, NULL, "Variável %d não possui produção associada\n", i)
 		}
 	}
+	free(origens);
 
 	calcular_vazio(gramatica);
 	calcular_first(gramatica);
@@ -394,7 +413,32 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 				simbolo.id.variavel = *indice;
 			}
 
+			#if 0
 			plist_append(producao_atual.simbolos, simbolo);
+			#else
+			do {
+				plist_t *plist = __PLIST_L2P(producao_atual.simbolos);
+				size_t index = (size_t) (plist_len(producao_atual.simbolos));
+				if ((producao_atual.simbolos) == NULL) {
+					//__PLIST_RESIZE(plist, producao_atual.simbolos, PLIST_CAPACITY_INCREMENT);
+					do {
+						plist = PLIST_REALLOC(plist, (PLIST_CAPACITY_INCREMENT) * sizeof *(producao_atual.simbolos) + sizeof *plist);
+						plist->capacity = (PLIST_CAPACITY_INCREMENT);
+						(producao_atual.simbolos) = (void *) plist + sizeof *plist;
+					} while(0);
+					plist->length = 0;
+				} else if (index >= plist->capacity) {
+					//__PLIST_RESIZE(plist, producao_atual.simbolos, index + PLIST_CAPACITY_INCREMENT);
+					do {
+						plist = PLIST_REALLOC(plist, (index + PLIST_CAPACITY_INCREMENT) * sizeof *(producao_atual.simbolos) + sizeof *plist);
+						plist->capacity = (index + PLIST_CAPACITY_INCREMENT);
+						(producao_atual.simbolos) = (void *) plist + sizeof *plist;
+					} while(0);
+				}
+				(producao_atual.simbolos)[(index)] = (simbolo);
+				plist->length++;
+			} while(0);
+			#endif
 		}
 
 		estado += estado >= 0;
@@ -411,11 +455,15 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 	#undef COMENTARIO
 	#undef LINHA_VAZIA
 
-	pcc_ll1_init(gramatica, nome_variaveis);
+	pcc_ll1_criar(gramatica, nome_variaveis);
+
+	plist_free(nome_variaveis);
+	pdict_destroy(variaveis);
 
 	for (size_t i = 0; i < plist_len(producoes); i++) {
 		pcc_ll1_add_producao(gramatica, producoes[i]);
 	}
+	plist_free(producoes);
 
 	pcc_ll1_calcular(gramatica);
 }
@@ -471,8 +519,8 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	while (i < lista_tokens_qtd && plist_len(pilha) > 0) {
 		if (pcc_ll1_g_debug > 0) {
 			printf("ENTRADA:");
-			const entrada_tamanho = 2;
-			for (size_t j = 0; j < entrada_tamanho; j++) {
+			const int entrada_tamanho = 2;
+			for (int j = 0; j < entrada_tamanho; j++) {
 				printf(" " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i + j].tipo, lista_tokens[i + j].subtipo));
 			}
 			putchar('\n');
