@@ -104,21 +104,15 @@ token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *_contexto) {
 	token.subtipo_to_str = NULL;
 
 	// Arquivo.
-	token.contexto.arquivo = strdup(contexto->arquivo);
+	token.contexto.fonte = contexto->fonte;
 
 	// Posição.
 	token.contexto.posicao.linha = contexto->posicao.linha;
 	token.contexto.posicao.coluna = contexto->posicao.coluna;
 
-	// Linha.
-	token.contexto.linha_comprimento = contexto->linha_comprimento;
-	PMALLOC(token.contexto.linha_src, token.contexto.linha_comprimento + 1);
-	strncpy(token.contexto.linha_src, contexto->linha_src, token.contexto.linha_comprimento);
-	token.contexto.linha_src[token.contexto.linha_comprimento] = '\0';
-
 	// Lexema
 	token.contexto.lexema_comprimento = contexto->lexema_comprimento;
-	token.contexto._lexema = token.contexto.linha_src + token.contexto.posicao.coluna - 1; // -1 pois linha e coluna começam em 1.
+	token.contexto._lexema = pcc_codigo_fonte_get_linha(token.contexto.fonte, token.contexto.posicao.linha, token.contexto.posicao.coluna);
 
 	// Valor.
 	token.valor.dados = NULL;
@@ -129,8 +123,6 @@ token_t token_criar(uint32_t tipo, uint32_t subtipo, const void *_contexto) {
 }
 
 void token_liberar(token_t *token) {
-	//free(token->contexto.arquivo);
-	free(token->contexto.linha_src);
 	free(token->valor.dados);
 }
 
@@ -161,7 +153,7 @@ void token_print(FILE *out, const token_t *token) {
 		"\tLexema: %s\n",
 		__token_codigo_str[token->tipo],
 		subtipo,
-		token->contexto.arquivo,
+		token->contexto.fonte->caminho,
 		token->contexto.posicao.linha, token->contexto.posicao.coluna,
 		token->contexto._lexema
 	);

@@ -316,11 +316,7 @@ static void char_adicionar(const void *contexto) {
 
 	// Checa se não existem mais caracteres.
 	if (*lexema != '\'') {
-		LOG_WARNING(
-			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-			token.contexto.lexema_comprimento,
-			"char com mais de um caractere"
-		);
+		pcc_log_warning(contexto, "char com mais de um caractere");
 	}
 
 	token_adicionar(&token);
@@ -357,11 +353,7 @@ static void int_adicionar(const void *contexto) {
 		}
 
 		if (!sufixo_valido) {
-			LOG_ERRO(
-				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.lexema_comprimento,
-				"sufixo \"%s\" inválido em constante inteiro", fim
-			);
+			pcc_log_erro(contexto, "sufixo \"%s\" inválido em constante inteiro", fim);
 			token_liberar(&token);
 			return;
 		}
@@ -369,11 +361,7 @@ static void int_adicionar(const void *contexto) {
 
 	// Verificando se houve overflow.
 	if (valor == UINTMAX_MAX && errno == ERANGE) {
-		LOG_WARNING(
-			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-			token.contexto.lexema_comprimento,
-			"constante inteira é grande demais"
-		);
+		pcc_log_warning(contexto, "constante inteira é grande demais");
 	}
 
 	// TODO: verificar se cabe em um int para reduzir tamanho.
@@ -418,11 +406,7 @@ static void double_adicionar(const void *contexto) {
 		}
 
 		if (!sufixo_valido || (f && l)) {
-			LOG_ERRO(
-				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.lexema_comprimento,
-				"sufixo \"%s\" inválido em constante de ponto flutuante", fim
-			);
+			pcc_log_erro(contexto, "sufixo \"%s\" inválido em constante de ponto flutuante", fim);
 			token_liberar(&token);
 			return;
 		}
@@ -431,17 +415,9 @@ static void double_adicionar(const void *contexto) {
 	// Verificando se houve overflow.
 	if (errno == ERANGE) {
 		if (valor == 0) {
-			LOG_WARNING(
-				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.lexema_comprimento,
-				"constante de ponto flutuante truncada para 0"
-			);
+			pcc_log_warning(contexto, "constante de ponto flutuante truncada para 0");
 		} else {
-			LOG_WARNING(
-				token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
-				token.contexto.lexema_comprimento,
-				"constante de ponto flutuante excede o alcance de '%s'", subtipo_str(token.subtipo)
-			);
+			pcc_log_warning(contexto, "constante de ponto flutuante excede o alcance de '%s'", subtipo_str(token.subtipo));
 		}
 	}
 
@@ -486,14 +462,8 @@ static char *double_to_str(const void *dados, size_t comprimento) {
 	return str;
 }
 
-static void incompleto(char simbolo, const void *_contexto) {
-	const token_contexto_t *contexto = _contexto;
-
-	LOG_ERRO(
-		contexto->arquivo, contexto->posicao.linha, contexto->posicao.coluna,
-		contexto->lexema_comprimento,
-		"caractere %c final ausente", simbolo
-	);
+static void incompleto(char simbolo, const void *contexto) {
+	pcc_log_erro(contexto, "caractere %c final ausente", simbolo);
 }
 static void str_incompleta(const void *contexto) {
 	incompleto('"', contexto);
@@ -545,11 +515,7 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 	}
 
 	if (base == -1) {
-		LOG_WARNING(
-			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
-			token->contexto.lexema_comprimento,
-			"sequência de escape desconhecida: '\\%c'", **src
-		);
+		pcc_log_warning(&token->contexto, "sequência de escape desconhecida: '\\%c'", **src);
 		return **src;
 	}
 
@@ -557,11 +523,7 @@ static char parse_escape_sequence(const token_t *token, const char **src) {
 	long c = strtol(*src, &end, base);
 
 	if (c > UCHAR_MAX) {
-		LOG_WARNING(
-			token->contexto.arquivo, token->contexto.posicao.linha, token->contexto.posicao.coluna,
-			token->contexto.lexema_comprimento,
-			"sequência de escape %s fora de alcance", base == 8 ? "octal": "hexadecimal"
-		);
+		pcc_log_warning(&token->contexto, "sequência de escape %s fora de alcance", base == 8 ? "octal": "hexadecimal");
 	}
 
 	*src = end - 1;
