@@ -462,7 +462,7 @@ static pcc_simbolo_t pilha_remover(pcc_simbolo_t **pilha) {
 		return (pcc_simbolo_t) {0};
 	}
 
-	return (*pilha)[plist->length--];
+	return (*pilha)[--plist->length];
 }
 
 static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {

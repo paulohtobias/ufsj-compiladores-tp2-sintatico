@@ -138,6 +138,10 @@ int lexico_parse(const char *nome_arquivo) {
 
 			// Resetando o contexto.
 			ignorar_espacos(&src, &linha, &coluna, &contexto);
+			if (*src == '\0') {
+				break;
+			}
+
 			contexto.posicao.linha = linha;
 			contexto.posicao.coluna = coluna;
 			contexto._lexema = pcc_codigo_fonte_get_linha(contexto.fonte, contexto.posicao.linha, contexto.posicao.coluna);
