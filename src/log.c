@@ -53,25 +53,36 @@ void pcc_log_mensagem(const char *tipo, const char *tipo_cor, const void *_conte
 
 	/// TODO: talvez dê problema com utf-8
 	size_t i, j;
+	int c = contexto->lexema_comprimento + 1;
 	putchar('\n');
-	for (i = 0; linha_src[i] != '\0' && linha_src[i] != '\n'; i++) {
-		if (i == coluna) {
+	for (i = 0, j = 0; linha_src[i] != '\0' && linha_src[i] != '\n';) {
+		int8_t comprimento = utf8_simbolo_comprimento(linha_src + i);
+
+		if (j == coluna) {
 			printf("%s", tipo_cor);
-		} else if (i == coluna + contexto->lexema_comprimento) {
+			c = 0;
+		} else if (c == contexto->lexema_comprimento) {
 			printf(COR(_RESET));
 		}
-		putchar(linha_src[i]);
+		printf("%.*s", comprimento, linha_src + i);
+
+		j++;
+		i += comprimento;
+
+		c += (c < contexto->lexema_comprimento) * comprimento;
 	}
 
 	// Marcador
 	putchar('\n');
 	for (j = 0; j < coluna; j++) {
-		char s = linha_src[j] == '\t' ? '\t' : ' ';
-		putchar(s);
+		putchar(linha_src[j] == '\t' ? '\t' : ' ');
 	}
 	printf("%s^", tipo_cor);
-	for (j = 1; j < contexto->lexema_comprimento && linha_src[j] != '\n'; j++) {
+	j = utf8_simbolo_comprimento(contexto->_lexema);
+	while (j < contexto->lexema_comprimento && linha_src[j] != '\n') {
 		putchar('~');
+
+		j += utf8_simbolo_comprimento(contexto->_lexema + j);
 	}
 	puts(COR(_RESET));
 }
