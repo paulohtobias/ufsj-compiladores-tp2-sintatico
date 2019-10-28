@@ -11,6 +11,7 @@
 #define LOG_H
 
 #include <stdio.h>
+#include "lexico/codigo_fonte.h"
 #include "utils.h"
 
 // Erros do código.
@@ -21,18 +22,12 @@ extern uint32_t _log_warnings;
 /// Contador de erros.
 extern uint32_t _log_erros;
 
+void log_mensagem(const char *tipo, const char *tipo_cor, uint32_t *log, const pcc_codigo_fonte_t *fonte, int32_t linha, int32_t coluna, size_t token_comprimento, ...);
+
 void log_print_linha(const char *linha_src, size_t token_comprimento, const char *cor_tipo, int32_t coluna);
 
 #define _LOG(tipo, COR_TIPO, gvar, arquivo, linha, coluna, linha_src, token_comprimento, ...) \
-	do { \
-		fprintf(stderr, \
-			COR(_RESET) COR_NEGRITO(_RESET) "%s:%d:%d: " COR_NEGRITO(COR_TIPO) "%s: " COR(_RESET), \
-			arquivo, linha, coluna, tipo \
-		); \
-		fprintf(stderr, __VA_ARGS__); \
-		log_print_linha(linha_src, token_comprimento, COR_NEGRITO(COR_TIPO), coluna); \
-		(gvar)++; \
-	} while (0);
+	log_mensagem(tipo, COR_NEGRITO(COR_TIPO), &(gvar), pcc_codigo_fonte_abir(arquivo), linha, coluna, token_comprimento, __VA_ARGS__)
 
 #define LOG_WARNING(arquivo, linha, coluna, linha_src, token_comprimento, ...) _LOG("warning", _AMARELO, _log_warnings, arquivo, linha, coluna, linha_src, token_comprimento, __VA_ARGS__)
 #define LOG_ERRO(arquivo, linha, coluna, linha_src, token_comprimento, ...) _LOG("erro", _VERMELHO, _log_erros, arquivo, linha, coluna, linha_src, token_comprimento, __VA_ARGS__)

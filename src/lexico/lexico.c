@@ -17,6 +17,8 @@ afd_t *afd_lexico = NULL;
 int lexico_init() {
 	int res = 0;
 
+	pcc_codigo_fonte_init();
+
 	PMALLOC(afd_lexico, 1);
 
 	if ((res = afd_init(afd_lexico, 1)) != AFD_OK) {
@@ -40,7 +42,7 @@ void lexico_finalizar() {
 }
 
 /// Avança no código fonte. Retorna true se houve um '\n'
-static bool avancar_cursor(pcc_codigo_fonte_t *fonte, char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
+static bool avancar_cursor(char **src, int8_t comprimento, int32_t *linha, int32_t *coluna, token_contexto_t *contexto) {
 	bool nl = false;
 
 	if (comprimento <= 0) {
@@ -80,7 +82,7 @@ static void ignorar_espacos(char **src, int32_t *linha, int32_t *coluna, token_c
 int lexico_parse(const char *nome_arquivo) {
 	// Carregando o arquivo para a memória. TODO: usar mmap
 	size_t comprimento;
-	pcc_codigo_fonte *codigo_fonte = pcc_codigo_fonte_abir(nome_arquivo);
+	pcc_codigo_fonte_t *codigo_fonte = pcc_codigo_fonte_abir(nome_arquivo);
 
 	char *src = codigo_fonte->src;
 
@@ -127,10 +129,12 @@ int lexico_parse(const char *nome_arquivo) {
 				estado_atual->acao(&contexto);
 			} else {
 				if (!moveu) {
+					const char *fmt = "símbolo '%.*s' inválido";
+					printf("fmt: %p\n&fmt: %p\n", fmt, &fmt);
 					LOG_ERRO(
 						contexto.arquivo, contexto.posicao.linha, contexto.posicao.coluna,
 						contexto.linha_src, simbolo_comprimento,
-						"símbolo '%.*s' inválido", simbolo_comprimento, contexto._lexema
+						fmt, simbolo_comprimento, contexto._lexema
 					);
 				}
 			}
@@ -161,7 +165,6 @@ int lexico_parse(const char *nome_arquivo) {
 	if (estado_atual->acao != NULL) {
 		estado_atual->acao(&contexto);
 	}
-	free(codigo_fonte);
 	free(contexto.arquivo);
 
 	return 0;

@@ -320,7 +320,7 @@ static void char_adicionar(const void *contexto) {
 			token.contexto.arquivo, token.contexto.posicao.linha, token.contexto.posicao.coluna,
 			token.contexto.linha_src, token.contexto.lexema_comprimento,
 			"char com mais de um caractere"
-		)
+		);
 	}
 
 	token_adicionar(&token);
