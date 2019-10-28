@@ -13,7 +13,7 @@
 #include "sintatico/ll1.h"
 
 #ifndef PCC_GRAMATICA_ARQUIVO
-#define PCC_GRAMATICA_ARQUIVO "gramática"
+#define PCC_GRAMATICA_ARQUIVO "cp19"
 #endif // PCC_GRAMATICA_ARQUIVO
 
 extern int pcc_gramatica_g_print_gramatica;
