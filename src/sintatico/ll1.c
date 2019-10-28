@@ -532,9 +532,7 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		}
 		//getchar();
 
-		/// TODO: refazer o tratamento de erro.
-		// Se houve um erro, avança até encontrar um token esperado e recomeça a análise a partir
-		// do próximo token.
+		// Tratamento de erro em modo pânico.
 		if (erro) {
 			// Se o terminal no topo da pilha não casar com a entrada, ele é desempilhado.
 			if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
@@ -542,13 +540,16 @@ void pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 			} else {
 				const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
 
-				// Se for um token de sincronização, o desempilha o não-terminal no topo da pilha.
-				if (_plist_find(variavel_topo->follow, &lista_tokens[i], token_cmp) != -1) {
-					pilha_remover(&pilha);
-				} else {
-					// Se for um token de erro, ignora o símbolo de entrada.
+				/*
+				 * Como tokens de sincronização usam-se todos os símbolos em FOLLOW(variavel_topo).
+				 * Descartam-se os símbolos de entrada até encontrar-se um elemento de
+				 * FOLLOW(variavel_topo), quando também descartamos variavel_topo.
+				 * É provável que a análise sintática possa prosseguir.
+				 */
+				while (_plist_find(variavel_topo->follow, &lista_tokens[i], token_cmp) == -1) {
 					i++;
 				}
+				pilha_remover(&pilha);
 			}
 		}
 	}
