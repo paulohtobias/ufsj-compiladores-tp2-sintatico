@@ -113,7 +113,7 @@ DECL-EXT := TIPO identificador DECL-EXT'
 DECL-EXT := typedef TIPO identificador ;
 
 # Tipo
-TIPO := TIPO-NOME PONTEIRO
+TIPO := STORAGE TIPO-NOME PONTEIRO
 TIPO-NOME := void
 TIPO-NOME := char
 TIPO-NOME := short
@@ -125,6 +125,11 @@ TIPO-NOME := signed
 TIPO-NOME := unsigned
 TIPO-NOME := struct identificador STRUCT
 
+STORAGE := const
+STORAGE := extern
+STORAGE := static
+STORAGE :=
+
 # Ponteiro
 PONTEIRO := PONTEIRO'
 PONTEIRO' := * PONTEIRO'
@@ -133,6 +138,7 @@ PONTEIRO' :=
 # Variáveis globais.
 DECL-EXT' := VAR-GLOBAL
 VAR-GLOBAL := = EXPR VAR-GLOBAL'
+VAR-GLOBAL := [ EXPR-V ] VAR-GLOBAL'
 VAR-GLOBAL := VAR-GLOBAL'
 VAR-GLOBAL' := , PONTEIRO identificador VAR-GLOBAL
 VAR-GLOBAL' := ;
@@ -149,6 +155,11 @@ FUNCAO-D := FUNCAO-DEF
 
 # TODO: Função: Parâmetros formais
 PARAM-F-LIST :=
+PARAM-F-LIST := TIPO identificador PARA-F-ARR PARAM-F-LIST'
+PARAM-F-LIST' := , TIPO identificador PARA-F-ARR PARAM-F-LIST'
+PARAM-F-LIST' :=
+PARA-F-ARR := [ EXPR-V ]
+PARA-F-ARR :=
 
 # Função: Protótipo
 FUNCAO-PRO := ;
@@ -173,8 +184,7 @@ STMT := STMT-PULO
 STMT-COMPOSTO := { STMT-LIST }
 
 # Expressões (termina em ;)
-STMT-EXPR := EXPR ;
-STMT-EXPR := ;
+STMT-EXPR := EXPR-V ;
 
 # Expressão TODO
 EXPR := T E'
@@ -195,6 +205,10 @@ F := float-literal
 F := double-literal
 F := long-double-literal
 
+# Expressão opcional
+EXPR-V := EXPR
+EXPR-V :=
+
 # Condicional
 STMT-COND := if ( EXPR ) STMT-COMPOSTO STMT-COND'
 STMT-COND' := else STMT-COMPOSTO
@@ -209,5 +223,4 @@ STMT-PULO := STMT-PULO' ;
 STMT-PULO' := continue
 STMT-PULO' := break
 STMT-PULO' := return STMT-PULO-RETURN
-STMT-PULO-RETURN := EXPR
-STMT-PULO-RETURN :=
+STMT-PULO-RETURN := EXPR-V
