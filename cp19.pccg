@@ -175,6 +175,7 @@ STMT' := STMT STMT'
 STMT' :=
 
 STMT := STMT-COMPOSTO
+STMT := STMT-DECL
 STMT := STMT-EXPR
 STMT := STMT-COND
 STMT := STMT-LAÇO
@@ -182,6 +183,14 @@ STMT := STMT-PULO
 
 # Statement composto (talvez seja recursão à esquerda)
 STMT-COMPOSTO := { STMT-LIST }
+
+# Declaração
+STMT-DECL := TIPO identificador STMT-DECL'
+STMT-DECL' := = EXPR STMT-DECL''
+STMT-DECL' := [ EXPR ] STMT-DECL''
+STMT-DECL' := STMT-DECL''
+STMT-DECL'' := , PONTEIRO identificador STMT-DECL'
+STMT-DECL'' := ;
 
 # Expressões (termina em ;)
 STMT-EXPR := EXPR-V ;
