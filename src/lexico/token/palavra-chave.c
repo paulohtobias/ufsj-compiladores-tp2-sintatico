@@ -61,6 +61,12 @@ int token_palavra_chave_buscar(const token_t *token) {
 
 		if (__palavras_chave[index][i] == '\0' && i == token->contexto.lexema_comprimento) {
 			return index;
+		} else {
+			if (__palavras_chave[index][i] == '\0') {
+				inicio = index;
+			} else if (i == token->contexto.lexema_comprimento) {
+				fim = index;
+			}
 		}
 	}
 }

@@ -309,6 +309,9 @@ static void char_adicionar(const void *contexto) {
 	const char *lexema = token.contexto._lexema + 1;
 	if (*lexema == '\\') {
 		*((char *) token.valor.dados) = parse_escape_sequence(&token, &lexema);
+	} else if (*lexema == '\'') {
+		pcc_log_erro(contexto, "constante char vazia");
+		lexema--;
 	} else {
 		*((char *) token.valor.dados) = *lexema;
 	}

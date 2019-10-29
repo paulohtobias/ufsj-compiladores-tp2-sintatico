@@ -288,6 +288,7 @@ STMT-COND' :=
 # Laço
 # TODO:
 STMT-LAÇO := while ( EXPR ) STMT
+STMT-LAÇO := do STMT-COMPOSTO while ( EXPR ) ;
 
 # Pulo incondicional
 STMT-PULO := STMT-PULO' ;
