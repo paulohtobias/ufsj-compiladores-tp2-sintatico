@@ -47,9 +47,11 @@ void pcc_gramatica_finalizar() {
 void pcc_gramatica_teste(const char *nome_arquivo) {
 	lexico_parse(nome_arquivo);
 
-	/**
-	for (size_t i = 0; i < plist_len(lista_tokens); i++) {
-		token_print(stdout, lista_tokens + i);
+	/**/
+	if (pcc_gramatica_g_print_gramatica > 0) {
+		for (size_t i = 0; i < plist_len(lista_tokens); i++) {
+			token_print(stdout, lista_tokens + i);
+		}
 	}
 	/**/
 	//exit(0);

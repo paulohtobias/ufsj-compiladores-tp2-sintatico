@@ -79,7 +79,11 @@ void pcc_ll1_calcular(pcc_ll1_t *gramatica) {
 	for (uint16_t i = 0; i < plist_len(gramatica->variaveis); i++) {
 		if (!origens[i]) {
 			free(origens);
-			LOG_PCC_ERRO(1, NULL, "Variável %d não possui produção associada\n", i)
+			LOG_PCC_ERRO(
+				1, NULL,
+				"Variável " COR_VARIAVEL "%s" COR(_RESET) " não possui produção associada\n",
+				gramatica->variaveis[i].nome
+			);
 		}
 	}
 	free(origens);
@@ -520,7 +524,7 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 		if (pcc_ll1_g_debug > 0) {
 			printf("ENTRADA:");
 			const int entrada_tamanho = 2;
-			for (int j = 0; j < entrada_tamanho; j++) {
+			for (int j = 0; j < entrada_tamanho && i + j < lista_tokens_qtd; j++) {
 				printf(" " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i + j].tipo, lista_tokens[i + j].subtipo));
 			}
 			putchar('\n');

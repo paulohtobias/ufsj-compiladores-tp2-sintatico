@@ -135,6 +135,8 @@ int lexico_parse(const char *nome_arquivo) {
 				}
 			}
 
+			// Estado atual volta a ser o inicial.
+			estado_atual = afd_lexico->estados;
 
 			// Resetando o contexto.
 			ignorar_espacos(&src, &linha, &coluna, &contexto);
@@ -146,9 +148,6 @@ int lexico_parse(const char *nome_arquivo) {
 			contexto.posicao.coluna = coluna;
 			contexto._lexema = pcc_codigo_fonte_get_linha(contexto.fonte, contexto.posicao.linha, contexto.posicao.coluna);
 			contexto.lexema_comprimento = 0;
-
-			// Estado atual volta a ser o inicial.
-			estado_atual = afd_lexico->estados;
 
 			moveu = false;
 		}

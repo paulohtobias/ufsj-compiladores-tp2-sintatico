@@ -74,15 +74,23 @@ void pcc_log_mensagem(const char *tipo, const char *tipo_cor, const void *_conte
 
 	// Marcador
 	putchar('\n');
-	for (j = 0; j < coluna; j++) {
-		putchar(linha_src[j] == '\t' ? '\t' : ' ');
+	j = 0;
+	for (i = 0; j < coluna; j++) {
+		int8_t comprimento = utf8_simbolo_comprimento(linha_src + i);
+
+		putchar(linha_src[i] == '\t' ? '\t' : ' ');
+		if (comprimento > 2) {
+			putchar(' ');
+		}
+
+		i += comprimento;
 	}
 	printf("%s^", tipo_cor);
-	j = utf8_simbolo_comprimento(contexto->_lexema);
-	while (j < contexto->lexema_comprimento && linha_src[j] != '\n') {
+	i = utf8_simbolo_comprimento(contexto->_lexema);
+	while (i < contexto->lexema_comprimento && linha_src[i] != '\n') {
 		putchar('~');
 
-		j += utf8_simbolo_comprimento(contexto->_lexema + j);
+		i += utf8_simbolo_comprimento(contexto->_lexema + i);
 	}
 	puts(COR(_RESET));
 }
