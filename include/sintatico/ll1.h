@@ -91,6 +91,10 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao);
 
 int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens);
 
+void pcc_ll1_simbolo_print(const pcc_ll1_t *gramatica, const pcc_simbolo_t *simbolo);
+
+void pcc_ll1_producao_print(const pcc_ll1_t *gramatica, const pcc_producao_t *producao);
+
 void pcc_ll1_print(const pcc_ll1_t *gramatica);
 
 void pcc_ll1_gramatica_cabecalho();

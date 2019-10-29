@@ -153,7 +153,7 @@ DECL-EXT' := ( PARAM-F-LIST ) FUNCAO-D
 FUNCAO-D := FUNCAO-PRO
 FUNCAO-D := FUNCAO-DEF
 
-# TODO: Função: Parâmetros formais
+# Função: Parâmetros formais
 PARAM-F-LIST :=
 PARAM-F-LIST := TIPO identificador PARA-F-ARR PARAM-F-LIST'
 PARAM-F-LIST' := , TIPO identificador PARA-F-ARR PARAM-F-LIST'
@@ -174,7 +174,7 @@ STMT-LIST :=
 STMT' := STMT STMT'
 STMT' :=
 
-STMT := STMT-COMPOSTO 	# TALVEZ REMOVER
+STMT := STMT-COMPOSTO
 STMT := STMT-EXPR
 STMT := STMT-COND
 STMT := STMT-LAÇO
@@ -186,28 +186,90 @@ STMT-COMPOSTO := { STMT-LIST }
 # Expressões (termina em ;)
 STMT-EXPR := EXPR-V ;
 
-# Expressão TODO
-EXPR := T E'
-E' := + T E'
-E' :=
-T := F T'
-T' := * F T'
-T' :=
-F := ( EXPR )
-F := identificador
-F := string-literal
-F := char-literal
-F := int-literal
-F := unsigned-int-literal
-F := long-int-literal
-F := unsigned-long-int-literal
-F := float-literal
-F := double-literal
-F := long-double-literal
+# Expressão
+EXPR := EXPR-1 EXPR'
+EXPR' := || EXPR-1 EXPR'
+EXPR' :=
+EXPR-1 := EXPR-2 EXPR-1'
+EXPR-1' := && EXPR-2 EXPR-1'
+EXPR-1' :=
+EXPR-2 := EXPR-3 EXPR-2'
+EXPR-2' := | EXPR-3 EXPR-2'
+EXPR-2' :=
+EXPR-3 := EXPR-4 EXPR-3'
+EXPR-3' := ^ EXPR-4 EXPR-3'
+EXPR-3' :=
+EXPR-4 := EXPR-5 EXPR-4'
+EXPR-4' := & EXPR-5 EXPR-4'
+EXPR-4' :=
+EXPR-5 := EXPR-6 EXPR-5'
+EXPR-5' := EXPR-5-OP EXPR-6 EXPR-5'
+EXPR-5' :=
+EXPR-5-OP := ==
+EXPR-5-OP := !=
+EXPR-6 := EXPR-7 EXPR-6'
+EXPR-6' := EXPR-6-OP EXPR-7 EXPR-6'
+EXPR-6' :=
+EXPR-6-OP := <
+EXPR-6-OP := <=
+EXPR-6-OP := >
+EXPR-6-OP := >=
+EXPR-7 := EXPR-8 EXPR-7'
+EXPR-7' := EXPR-7-OP EXPR-8 EXPR-7'
+EXPR-7' :=
+EXPR-7-OP := <<
+EXPR-7-OP := >>
+EXPR-8 := EXPR-9 EXPR-8'
+EXPR-8' := EXPR-8-OP EXPR-9 EXPR-8'
+EXPR-8' :=
+EXPR-8-OP := +
+EXPR-8-OP := -
+EXPR-9 := EXPR-10 EXPR-9'
+EXPR-9' := EXPR-9-OP EXPR-10 EXPR-9'
+EXPR-9' :=
+EXPR-9-OP := *
+EXPR-9-OP := /
+EXPR-9-OP := %
+EXPR-10 := EXPR-10-OP EXPR-10
+EXPR-10 := EXPR-LITERAL
+EXPR-10 := ( EXPR-10-PAR
+EXPR-10 := identificador EXPR-10'
+EXPR-10' := ( PARAM-R-LIST )
+EXPR-10' := [ EXPR ]
+EXPR-10' := ->
+EXPR-10' := .
+EXPR-10' :=
+EXPR-10-OP := !
+EXPR-10-OP := ~
+EXPR-10-OP := ++
+EXPR-10-OP := --
+EXPR-10-OP := +
+EXPR-10-OP := -
+EXPR-10-OP := *
+EXPR-10-OP := &
+EXPR-10-OP := sizeof
+EXPR-10-PAR := TIPO ) EXPR-10
+EXPR-10-PAR := EXPR )
+
+EXPR-LITERAL := string-literal
+EXPR-LITERAL := char-literal
+EXPR-LITERAL := int-literal
+EXPR-LITERAL := unsigned-int-literal
+EXPR-LITERAL := long-int-literal
+EXPR-LITERAL := unsigned-long-int-literal
+EXPR-LITERAL := float-literal
+EXPR-LITERAL := double-literal
+EXPR-LITERAL := long-double-literal
 
 # Expressão opcional
 EXPR-V := EXPR
 EXPR-V :=
+
+# Função: Parâmetros reais
+PARAM-R-LIST :=
+PARAM-R-LIST := EXPR PARAM-R-LIST'
+PARAM-R-LIST' := , EXPR PARAM-R-LIST'
+PARAM-R-LIST' :=
 
 # Condicional
 STMT-COND := if ( EXPR ) STMT-COMPOSTO STMT-COND'
