@@ -175,8 +175,8 @@ STMT' := STMT STMT'
 STMT' :=
 
 STMT := STMT-COMPOSTO
-STMT := STMT-DECL
-STMT := STMT-EXPR
+STMT := STMT-DECL ;
+STMT := EXPR-V ;
 STMT := STMT-COND
 STMT := STMT-LAÇO
 STMT := STMT-PULO
@@ -190,10 +190,7 @@ STMT-DECL' := = EXPR STMT-DECL''
 STMT-DECL' := [ EXPR ] STMT-DECL''
 STMT-DECL' := STMT-DECL''
 STMT-DECL'' := , PONTEIRO identificador STMT-DECL'
-STMT-DECL'' := ;
-
-# Expressões (termina em ;)
-STMT-EXPR := EXPR-V ;
+STMT-DECL'' :=
 
 # Expressão
 EXPR := EXPR-1 EXPR'
@@ -247,6 +244,8 @@ EXPR-10' := ( PARAM-R-LIST )
 EXPR-10' := [ EXPR ]
 EXPR-10' := ->
 EXPR-10' := .
+EXPR-10' := ++
+EXPR-10' := --
 EXPR-10' :=
 EXPR-10-OP := !
 EXPR-10-OP := ~
@@ -289,6 +288,9 @@ STMT-COND' :=
 # TODO:
 STMT-LAÇO := while ( EXPR ) STMT
 STMT-LAÇO := do STMT-COMPOSTO while ( EXPR ) ;
+STMT-LAÇO := for ( FOR-1 ; EXPR-V ; EXPR-V ) STMT-COMPOSTO
+FOR-1 := EXPR-V
+FOR-1 := STMT-DECL
 
 # Pulo incondicional
 STMT-PULO := STMT-PULO' ;

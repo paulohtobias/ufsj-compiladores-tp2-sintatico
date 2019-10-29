@@ -525,15 +525,21 @@ static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {
 
 static void log_erro_esperado(const pcc_ll1_t *gramatica, const pcc_simbolo_t *pilha_topo, const token_t *lista_tokens, ssize_t i) {
 	if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
-		if (i < 0) {
+		if (i >= 0) {
+			pcc_log_erro(
+				&lista_tokens[i].contexto,
+				"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
+				token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
+				token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
+			);
+		} else {
 			i = plist_len(lista_tokens) - 1;
+			pcc_log_erro(
+				&lista_tokens[i].contexto,
+				"esperava " COR_TOKEN "%s" COR(_RESET) " antes do fim inesperado do input",
+				token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo)
+			);
 		}
-		pcc_log_erro(
-			&lista_tokens[i].contexto,
-			"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
-			token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
-			token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
-		);
 	} else {
 		const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
 
@@ -555,7 +561,7 @@ static void log_erro_esperado(const pcc_ll1_t *gramatica, const pcc_simbolo_t *p
 			offset += err_msg_tamanho;
 
 		}
-		if (i > 0) {
+		if (i >= 0) {
 			sprintf(&err_msg[offset], COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo));
 		} else {
 			sprintf(&err_msg[offset], COR(_RESET) " antes do fim inesperado de input");
