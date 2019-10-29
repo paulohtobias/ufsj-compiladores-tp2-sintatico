@@ -39,6 +39,7 @@ obj
 #Project folders and files
 nbproject/
 .vscode/
+scripts/
 testes/
 ideias/
 resources/
