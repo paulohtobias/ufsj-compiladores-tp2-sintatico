@@ -22,6 +22,6 @@ void pcc_gramatica_init(const char *pcc_gramatica_std);
 
 void pcc_gramatica_finalizar();
 
-void pcc_gramatica_teste(const char *nome_arquivo);
+int32_t *pcc_gramatica_analisar(const char *nome_arquivo);
 
 #endif // GRAMATICA_H

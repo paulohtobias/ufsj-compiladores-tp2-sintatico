@@ -38,26 +38,13 @@ void pcc_gramatica_init(const char *pcc_gramatica_std) {
 }
 
 void pcc_gramatica_finalizar() {
-	/// TODO:
 	lexico_finalizar();
 
 	pcc_ll1_liberar(&gramatica_lexico);
 }
 
-void pcc_gramatica_teste(const char *nome_arquivo) {
+int32_t *pcc_gramatica_analisar(const char *nome_arquivo) {
 	lexico_parse(nome_arquivo);
 
-	/**
-	if (pcc_gramatica_g_print_gramatica > 0) {
-		for (size_t i = 0; i < plist_len(lista_tokens); i++) {
-			token_print(stdout, lista_tokens + i);
-		}
-	}
-	/**/
-	//exit(0);
-
-
-	int32_t *acoes = pcc_ll1_reconhecer(&gramatica_lexico, lista_tokens);
-
-	plist_free(acoes);
+	return pcc_ll1_reconhecer(&gramatica_lexico, lista_tokens);
 }

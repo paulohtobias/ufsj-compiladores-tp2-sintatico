@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "plist.h"
 #include "sintatico/gramatica.h"
 
 int main(int argc, char const *argv[]) {
@@ -64,7 +65,8 @@ int main(int argc, char const *argv[]) {
 
 	pcc_gramatica_init(padrao);
 
-	pcc_gramatica_teste(fonte_caminho);
+	int32_t *acoes = pcc_gramatica_analisar(fonte_caminho);
+	plist_free(acoes);
 
 	// Exibe "Fim" na tela.
 	putchar('\x46');
