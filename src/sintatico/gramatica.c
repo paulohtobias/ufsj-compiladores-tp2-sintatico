@@ -18,7 +18,6 @@ const char *pcc_gramatica_g_std = PCC_GRAMATICA_ARQUIVO;
 int pcc_gramatica_g_print_gramatica = 0;
 
 void pcc_gramatica_init(const char *pcc_gramatica_std) {
-	// TODO
 	lexico_init();
 
 	if (pcc_gramatica_std == NULL) {

@@ -142,9 +142,9 @@ a seguir será considerado um não-terminal (também chamado de variável).
 | ==                        	|
 | !=                        	|
 | ^                         	|
-| |                         	|
+| \|                         	|
 | &&                        	|
-| ||                        	|
+| \|\|                        	|
 | ?                         	|
 | =                         	|
 | +=                        	|
@@ -154,7 +154,7 @@ a seguir será considerado um não-terminal (também chamado de variável).
 | %=                        	|
 | &=                        	|
 | ^=                        	|
-| |=                        	|
+| \|=                        	|
 | <<=                       	|
 | >>=                       	|
 | (                         	|

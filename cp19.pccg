@@ -312,7 +312,6 @@ STMT-COND' := else STMT-COMPOSTO
 STMT-COND' :=
 
 # Laço
-# TODO:
 STMT-LAÇO := while ( EXPR ) STMT
 STMT-LAÇO := do STMT-COMPOSTO while ( EXPR ) ;
 STMT-LAÇO := for ( FOR-1 ; EXPR-V ; EXPR-V ) STMT-COMPOSTO

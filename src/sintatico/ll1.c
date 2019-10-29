@@ -397,8 +397,6 @@ void pcc_ll1_de_arquivo(pcc_ll1_t *gramatica, const char *padrao) {
 	gramatica->variaveis = NULL;
 	gramatica->variavel_inicial = 0;
 
-	/// TODO: usar a pdict_create_all com um tamanho máximo grande o suficiente pra caber todas as variáveis
-	/// pra evitar recopiar o vetor.
 	pdict_t *variaveis = pdict_create();
 	char **nome_variaveis = NULL;
 

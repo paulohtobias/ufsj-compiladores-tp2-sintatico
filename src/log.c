@@ -51,7 +51,6 @@ void pcc_log_mensagem(const char *tipo, const char *tipo_cor, const void *_conte
 	const char *linha_src = pcc_codigo_fonte_get_linha(contexto->fonte, linha, 1);
 	coluna--;
 
-	/// TODO: talvez dê problema com utf-8
 	size_t i, j;
 	int c = contexto->lexema_comprimento + 1;
 	putchar('\n');
