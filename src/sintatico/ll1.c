@@ -511,6 +511,49 @@ static void pilha_print(const pcc_ll1_t *gramatica, pcc_simbolo_t *pilha) {
 	}
 }
 
+static void log_erro_esperado(const pcc_ll1_t *gramatica, const pcc_simbolo_t *pilha_topo, const token_t *lista_tokens, ssize_t i) {
+	if (pilha_topo->tipo == SIMBOLO_TERMINAL) {
+		if (i < 0) {
+			i = plist_len(lista_tokens) - 1;
+		}
+		pcc_log_erro(
+			&lista_tokens[i].contexto,
+			"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
+			token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
+			token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
+		);
+	} else {
+		const pcc_variavel_t *variavel_topo = &gramatica->variaveis[pilha_topo->id.variavel];
+
+		int err_msg_tamanho = 80 + strlen(token_tipo_subtipo_str(variavel_topo->M[0].token.tipo, variavel_topo->M[0].token.subtipo));
+		for (size_t j = 0; j < plist_len(variavel_topo->M); j++) {
+			err_msg_tamanho += 40 + strlen(token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo));
+		}
+		char err_msg[err_msg_tamanho];
+		int offset = 0;
+		sprintf(err_msg, "esperava " COR_TOKEN "%s%n", token_tipo_subtipo_str(variavel_topo->M[0].token.tipo, variavel_topo->M[0].token.subtipo), &err_msg_tamanho);
+		offset += err_msg_tamanho;
+		if (plist_len(variavel_topo->M) > 1) {
+			size_t j;
+			for (j = 1; j < plist_len(variavel_topo->M) - 1; j++) {
+				sprintf(&err_msg[offset], COR(_RESET) ", " COR_TOKEN "%s%n" COR(_RESET), token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo), &err_msg_tamanho);
+				offset += err_msg_tamanho;
+			}
+			sprintf(&err_msg[offset], COR(_RESET) " ou " COR_TOKEN "%s%n" COR(_RESET), token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo), &err_msg_tamanho);
+			offset += err_msg_tamanho;
+
+		}
+		if (i > 0) {
+			sprintf(&err_msg[offset], COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo));
+		} else {
+			sprintf(&err_msg[offset], COR(_RESET) " antes do fim inesperado de input");
+			i = plist_len(lista_tokens) - 1;
+		}
+
+		pcc_log_erro(&lista_tokens[i].contexto, "%s", err_msg);
+	}
+}
+
 int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	pcc_simbolo_t *pilha = NULL;
 	int32_t *acoes = NULL;
@@ -549,12 +592,7 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 			 * serem de tipos diferentes, a comparação é possível.
 			 */
 			if (token_cmp(&pilha_topo->id.token, &lista_tokens[i])) {
-				pcc_log_erro(
-					&lista_tokens[i].contexto,
-					"esperava " COR_TOKEN "%s" COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET),
-					token_tipo_subtipo_str(pilha_topo->id.token.tipo, pilha_topo->id.token.subtipo),
-					token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo)
-				);
+				log_erro_esperado(gramatica, pilha_topo, lista_tokens, i);
 				erro = true;
 			} else {
 				pilha_remover(&pilha);
@@ -570,27 +608,7 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 
 			int32_t producao_id = _plist_find(variavel_topo->M, &lista_tokens[i], token_cmp);
 			if (producao_id == -1) {
-				int err_msg_tamanho = 80 + strlen(token_tipo_subtipo_str(variavel_topo->M[0].token.tipo, variavel_topo->M[0].token.subtipo));
-				for (size_t j = 0; j < plist_len(variavel_topo->M); j++) {
-					err_msg_tamanho += 40 + strlen(token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo));
-				}
-				char err_msg[err_msg_tamanho];
-				int offset = 0;
-				sprintf(err_msg, "esperava " COR_TOKEN "%s%n", token_tipo_subtipo_str(variavel_topo->M[0].token.tipo, variavel_topo->M[0].token.subtipo), &err_msg_tamanho);
-				offset += err_msg_tamanho;
-				if (plist_len(variavel_topo->M) > 1) {
-					size_t j;
-					for (j = 1; j < plist_len(variavel_topo->M) - 1; j++) {
-						sprintf(&err_msg[offset], COR(_RESET) ", " COR_TOKEN "%s%n" COR(_RESET), token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo), &err_msg_tamanho);
-						offset += err_msg_tamanho;
-					}
-					sprintf(&err_msg[offset], COR(_RESET) " ou " COR_TOKEN "%s%n" COR(_RESET), token_tipo_subtipo_str(variavel_topo->M[j].token.tipo, variavel_topo->M[j].token.subtipo), &err_msg_tamanho);
-					offset += err_msg_tamanho;
-
-				}
-				sprintf(&err_msg[offset], COR(_RESET) " antes do token " COR_TOKEN "%s" COR(_RESET), token_tipo_subtipo_str(lista_tokens[i].tipo, lista_tokens[i].subtipo));
-
-				pcc_log_erro(&lista_tokens[i].contexto, "%s", err_msg);
+				log_erro_esperado(gramatica, pilha_topo, lista_tokens, i);
 				erro = true;
 			} else {
 				const pcc_producao_t *producao = &gramatica->producoes[variavel_topo->M[producao_id].producao_id];
@@ -670,7 +688,9 @@ int32_t *pcc_ll1_reconhecer(pcc_ll1_t *gramatica, token_t *lista_tokens) {
 	}
 
 	if (plist_len(pilha) > 0) {
-		pcc_log_erro(&lista_tokens[lista_tokens_qtd - 1].contexto, "fim inesperado de input");
+		const pcc_simbolo_t *pilha_topo = &pilha[plist_len(pilha) - 1];
+
+		log_erro_esperado(gramatica, pilha_topo, lista_tokens, -1);
 	}
 
 	plist_free(pilha);

@@ -105,17 +105,12 @@
 
 
 # Escopo global
-INICIO := FUNCAO-D INICIO'
-INICIO' := FUNCAO-D INICIO'
+INICIO := DECL-EXT INICIO'
+INICIO' := DECL-EXT INICIO'
 INICIO' :=
 
-# Função: Protótipo e Definição
-FUNCAO-D := TIPO identificador ( PARAM-F-LIST ) FUNCAO-D'
-FUNCAO-D' := FUNCAO-PRO
-FUNCAO-D' := FUNCAO-DEF
-
-# TODO: Função: Parâmetros formais
-PARAM-F-LIST :=
+DECL-EXT := TIPO identificador DECL-EXT'
+DECL-EXT := typedef TIPO identificador ;
 
 # Tipo
 TIPO := void
@@ -127,8 +122,27 @@ TIPO := float
 TIPO := double
 TIPO := signed
 TIPO := unsigned
-TIPO := struct identificador
-TIPO := identificador
+TIPO := struct identificador STRUCT
+
+# Variáveis globais.
+DECL-EXT' := VAR-GLOBAL
+VAR-GLOBAL := = EXPR VAR-GLOBAL'
+VAR-GLOBAL := VAR-GLOBAL'
+VAR-GLOBAL' := , identificador VAR-GLOBAL
+VAR-GLOBAL' := ;
+
+# Structs
+STRUCT := { STRUCT-CORPO }
+STRUCT :=
+STRUCT-CORPO :=
+
+# Função: Protótipo e Definição
+DECL-EXT' := ( PARAM-F-LIST ) FUNCAO-D
+FUNCAO-D := FUNCAO-PRO
+FUNCAO-D := FUNCAO-DEF
+
+# TODO: Função: Parâmetros formais
+PARAM-F-LIST :=
 
 # Função: Protótipo
 FUNCAO-PRO := ;
