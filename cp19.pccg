@@ -113,22 +113,28 @@ DECL-EXT := TIPO identificador DECL-EXT'
 DECL-EXT := typedef TIPO identificador ;
 
 # Tipo
-TIPO := void
-TIPO := char
-TIPO := short
-TIPO := int
-TIPO := long
-TIPO := float
-TIPO := double
-TIPO := signed
-TIPO := unsigned
-TIPO := struct identificador STRUCT
+TIPO := TIPO-NOME PONTEIRO
+TIPO-NOME := void
+TIPO-NOME := char
+TIPO-NOME := short
+TIPO-NOME := int
+TIPO-NOME := long
+TIPO-NOME := float
+TIPO-NOME := double
+TIPO-NOME := signed
+TIPO-NOME := unsigned
+TIPO-NOME := struct identificador STRUCT
+
+# Ponteiro
+PONTEIRO := PONTEIRO'
+PONTEIRO' := * PONTEIRO'
+PONTEIRO' :=
 
 # Variáveis globais.
 DECL-EXT' := VAR-GLOBAL
 VAR-GLOBAL := = EXPR VAR-GLOBAL'
 VAR-GLOBAL := VAR-GLOBAL'
-VAR-GLOBAL' := , identificador VAR-GLOBAL
+VAR-GLOBAL' := , PONTEIRO identificador VAR-GLOBAL
 VAR-GLOBAL' := ;
 
 # Structs

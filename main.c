@@ -66,6 +66,17 @@ int main(int argc, char const *argv[]) {
 
 	pcc_gramatica_teste(fonte_caminho);
 
+	// Exibe "Fim" na tela.
+	putchar('\x46');
+	putchar('\151');
+	putchar('m');
+	putchar('\n');
+
+	extern uint32_t _log_warnings;
+	extern uint32_t _log_erros;
+	printf("Warnings: %u\n", _log_warnings);
+	printf("Erros: %u\n", _log_erros);
+
 	pcc_gramatica_finalizar();
 	pcc_codigo_fonte_finalizar();
 
